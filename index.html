@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人生反向設計所｜卡住診斷器 Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- 導覽列 -->
+    <header class="w-full border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="font-black text-lg tracking-wider bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                🧭 人生反向設計所
+            </div>
+            <div class="text-xs text-slate-400 border border-slate-800 px-3 py-1 rounded-full">
+                AI 深度驅動版
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要內容區塊 -->
+    <main class="max-w-xl w-full mx-auto px-6 py-8 flex-grow flex flex-col justify-center">
+
+        <!-- 1. 首頁：選擇卡點 -->
+        <div id="view-home" class="space-y-6">
+            <div class="space-y-3 text-center">
+                <span class="inline-block bg-amber-500/10 text-amber-400 text-xs font-bold px-3 py-1 rounded-full border border-amber-500/20">
+                    反向拆解，找回人生主導權
+                </span>
+                <h1 class="text-3xl font-black tracking-tight text-white">我現在最卡的是什麼？</h1>
+                <p class="text-slate-400 text-sm">透過 10 個精準逆向提問，讓 Gemini AI 深度即時解構你的潛意識盲點。</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 pt-4">
+                <button onclick="startDiagnosis('工作')" class="group p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 transition-all text-left flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-2xl">💼</span>
+                        <div>
+                            <div class="font-bold text-white group-hover:text-amber-400 transition-colors">工作與職涯</div>
+                            <div class="text-xs text-slate-400">倦怠、迷茫、轉職猶豫、升遷瓶頸</div>
+                        </div>
+                    </div>
+                    <span class="text-slate-600 group-hover:text-amber-400 transition-colors">→</span>
+                </button>
+
+                <button onclick="startDiagnosis('金錢')" class="group p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 transition-all text-left flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-2xl">💰</span>
+                        <div>
+                            <div class="font-bold text-white group-hover:text-amber-400 transition-colors">金錢與財務</div>
+                            <div class="text-xs text-slate-400">有錢卻節省焦慮、負債月光、消費罪惡感</div>
+                        </div>
+                    </div>
+                    <span class="text-slate-600 group-hover:text-amber-400 transition-colors">→</span>
+                </button>
+
+                <button onclick="startDiagnosis('關係')" class="group p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 transition-all text-left flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-2xl">🧩</span>
+                        <div>
+                            <div class="font-bold text-white group-hover:text-amber-400 transition-colors">人際與對外關係</div>
+                            <div class="text-xs text-slate-400">主管、同事、伴侶或家人的溝通與界線</div>
+                        </div>
+                    </div>
+                    <span class="text-slate-600 group-hover:text-amber-400 transition-colors">→</span>
+                </button>
+
+                <button onclick="startDiagnosis('人生方向')" class="group p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 transition-all text-left flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-2xl">🧭</span>
+                        <div>
+                            <div class="font-bold text-white group-hover:text-amber-400 transition-colors">人生方向與意義</div>
+                            <div class="text-xs text-slate-400">超躺平、不知道自己要什麼、缺乏動力</div>
+                        </div>
+                    </div>
+                    <span class="text-slate-600 group-hover:text-amber-400 transition-colors">→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. 問答互動頁（10題） -->
+        <div id="view-question" class="hidden space-y-6">
+            <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
+                <span id="q-category-tag" class="text-amber-400 font-bold uppercase tracking-wider">工作領域</span>
+                <span>問題 <span id="current-q-num">1</span> / 10</span>
+            </div>
+
+            <div class="space-y-4">
+                <h2 id="question-text" class="text-xl font-bold text-white leading-relaxed">載入中...</h2>
+                <textarea id="answer-input" rows="4" class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 text-sm transition-all resize-none" placeholder="直覺寫下你的真實想法，不用過度包裝..."></textarea>
+            </div>
+
+            <div class="flex space-x-3">
+                <button id="prev-btn" onclick="prevQuestion()" class="hidden w-1/3 py-4 bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold rounded-2xl border border-slate-800 transition-all">
+                    上一題
+                </button>
+                <button onclick="nextQuestion()" class="flex-grow py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl transition-all shadow-lg shadow-amber-500/10">
+                    下一題
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. AI 分析中過場動畫 -->
+        <div id="view-loading" class="hidden text-center space-y-6 py-12">
+            <div class="inline-block relative w-16 h-16">
+                <div class="absolute inset-0 rounded-full border-4 border-slate-800"></div>
+                <div class="absolute inset-0 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"></div>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-lg font-bold text-white">Gemini AI 正在深度解構你的 10 項回答...</h3>
+                <p id="loading-status-text" class="text-xs text-slate-400">正在分析你的潛意識抗拒與心智盲點...</p>
+            </div>
+        </div>
+
+        <!-- 4. 診斷結果報告（免費摘要 + 付費鎖定） -->
+        <div id="view-result" class="hidden space-y-6">
+            <div class="bg-gradient-to-br from-amber-500/10 to-slate-900 border border-amber-500/30 rounded-3xl p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-amber-400 bg-amber-500/20 px-3 py-1 rounded-full">免費診斷摘要</span>
+                    <span class="text-xs text-slate-400">代碼：#AI-REV</span>
+                </div>
+                <h2 class="text-2xl font-black text-white">你目前的真實卡點：</h2>
+                <p id="summary-text" class="text-slate-300 text-sm leading-relaxed bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
+                    載入中...
+                </p>
+            </div>
+
+            <!-- 付費解鎖牆 -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center space-y-4 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl"></div>
+                
+                <div class="space-y-2">
+                    <div class="text-amber-400 font-bold text-sm">🔒 解鎖反向設計完整解方</div>
+                    <h3 class="text-xl font-black text-white">解鎖深度卡點解構 & 3 個專屬低成本實驗</h3>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto">包含由 Gemini AI 即時量身生成的深度心理剖析、現有資源、底線條件與破局實驗。</p>
+                </div>
+
+                <div class="pt-2">
+                    <div class="text-2xl font-black text-white mb-3">NT$ 199 <span class="text-xs text-slate-500 font-normal">/ 一次解鎖，完整擁有</span></div>
+                    <button onclick="openCheckoutModal()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black rounded-2xl transition-all shadow-xl shadow-amber-500/20">
+                        立即解鎖完整報告 (NT$199)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 完整報告頁（解鎖後） -->
+        <div id="view-full-report" class="hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">✓ 已解鎖 AI 反向設計完整報告</span>
+                <button onclick="resetApp()" class="text-xs text-slate-400 hover:text-white underline">重新檢測</button>
+            </div>
+
+            <div class="space-y-6">
+                <!-- 核心卡點深度解析 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+                    <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider">🎯 核心卡點深度解構 (Gemini 生成)</h3>
+                    <div id="full-core-block" class="space-y-3 text-sm text-slate-200 leading-relaxed"></div>
+                </div>
+
+                <!-- 現有資源與底線 -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+                        <h4 class="text-xs font-bold text-blue-400 uppercase tracking-wider">🛠 現有可調動資源</h4>
+                        <p id="full-resources" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">...</p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+                        <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider">⚠️ 不能接受的底線</h4>
+                        <p id="full-boundaries" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">...</p>
+                    </div>
+                </div>
+
+                <!-- 3 個客製化低成本實驗 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider">🧪 專屬於你的 3 個低成本破局實驗</h3>
+                    <div id="full-experiments" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 💳 結帳與 Email 收集彈窗 -->
+    <div id="checkout-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-5 relative shadow-2xl">
+            <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-sm">✕</button>
+
+            <div class="space-y-2 text-center">
+                <span class="text-xs font-bold text-amber-400 bg-amber-500/20 px-3 py-1 rounded-full">人生反向設計所・安全結帳</span>
+                <h3 class="text-xl font-black text-white">解鎖完整報告與學員帳戶</h3>
+                <p class="text-xs text-slate-400">請輸入常用 Email（用於報告備份與發送後續陪伴資源）</p>
+            </div>
+
+            <div class="space-y-4 pt-2">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">您的常用 Email</label>
+                    <input type="email" id="modal-email" placeholder="name@example.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 space-y-2 text-xs text-slate-400">
+                    <div class="flex justify-between"><span>項目：人生卡住診斷 Pro 完整報告</span><span class="text-white font-bold">NT$199</span></div>
+                    <div class="flex justify-between border-t border-slate-800/80 pt-2 font-bold text-white"><span>總計金額</span><span class="text-amber-400">NT$199</span></div>
+                </div>
+
+                <button onclick="processPaymentAndUnlock()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black rounded-2xl transition-all shadow-xl shadow-amber-500/20">
+                    確認付款 NT$199 並解鎖報告
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="w-full py-6 text-center text-xs text-slate-600 border-t border-slate-900">
+        &copy; 2026 人生反向設計所 Life Reverse Design Lab. All Rights Reserved.
+    </footer>
+
+    <!-- JavaScript 邏輯 -->
+    <script>
+        let selectedCategory = '';
+        let currentQIndex = 0;
+        let userAnswers = [];
+        let aiReportData = null;
+
+        const questionsMap = {
+            '工作': [
+                "1. 在目前的工作中，最讓你感到精神耗弱、一想到就想嘆氣的瞬間是什麼時候？",
+                "2. 如果這份工作維持現狀不變，三年後的你會過著怎樣的生活？這對你有吸引力嗎？",
+                "3. 你心裡其實清楚解方，或者最想做的是什麼？是什麼讓你一直沒有跨出那一步？",
+                "4. 為了維持現狀（薪水、穩定、安全感），你目前正在默默忍耐或犧牲什麼？",
+                "5. 如果明天你可以完全不用顧慮金錢壓力，你最想立刻改變工作上的什麼事？",
+                "6. 回顧過去半年，你在工作上最大的挫折感來自於「能力不夠」還是「環境與制度的消耗」？",
+                "7. 你覺得身邊主管或同事對你的期待，跟你心裡真正想發揮的價值有什麼衝突？",
+                "8. 當你準備提出改變或爭取權益時，你內心最害怕發生的最壞結果是什麼？",
+                "9. 你目前的工作是出於「主動選擇」，還是因為「害怕找不到更好的而將就」？",
+                "10. 如果你不用再考慮『別人覺得這份工作安不安全』，你內心最想對現在的職涯按下什麼按鈕？"
+            ],
+            '金錢': [
+                "1. 當你想到自己目前的財務狀況或資產累積時，內心第一個浮現的焦慮是什麼？",
+                "2. 你覺得自己對錢的恐懼或不安全感，最大部分是來自於哪裡？",
+                "3. 在消費或投資決策上，你最常因為什麼原因而陷入糾結或後悔？",
+                "4. 你目前有哪些「明知不該花卻還是花了」的金錢黑洞？",
+                "5. 為了改善財務，你試過最有效的方法是什麼？為什麼後來停滯了？",
+                "6. 你對「有錢」的定義是什麼？這個定義是從哪裡來的（原生家庭、社會價值？）",
+                "7. 當看見身邊的人賺得比你多或過得比你奢華時，你內心深處的真實感受是什麼？",
+                "8. 你在花錢時，是否常伴隨著罪惡感？這種罪惡感是為了補償什麼？",
+                "9. 如果必須在「現在過得舒服」與「未來絕對財務安全」之間二選一，你會如何擺盪？",
+                "10. 在金錢的使用上，你覺得自己是『不敢花（過度防禦）』還是『留不住（無法控制）』？這個狀態對生活造成了什麼影響？"
+            ],
+            '關係': [
+                "1. 在你目前最卡住的這段關係中（對象可能是主管、同事、客戶、伴侶或家人），最讓你委屈或耗能的是什麼？",
+                "2. 當你與對方意見不合或發生摩擦時，你通常習慣第一時間反應什麼？結果通常如何？",
+                "3. 你在這段關係中，是不是一直在默默配合對方的期待或潛規則，而不敢展現真實想法？",
+                "4. 如果要你針對這個對象或這種互動模式設下一條「絕對不能再退讓的底線」，那會是什麼？",
+                "5. 你為了維持這段關係的表面和平（或避免衝突），吞忍過最嚴重的一件事是什麼？",
+                "6. 當你對對方有不滿時，你是習慣直接明講、悶不吭聲、還是私底下向其他人抱怨？",
+                "7. 你覺得這段關係之所以卡住，是因為溝通不良、權力不對等、還是彼此價值觀本質不同？",
+                "8. 你在面對這個人時，內心最深處的恐懼是什麼？（例如：怕被否定、怕被刁難、怕被排擠或怕失去關係）",
+                "9. 你平常是否經常把別人的情緒或工作責任攬在自己身上，導致自己壓力過大？",
+                "10. 如果你不用再顧慮對方的眼光或後果，你最想對他說的一句話是什麼？"
+            ],
+            '人生方向': [
+                "1. 每天醒來時，支撐你起床的動力是什麼？還是只是一種慣性？（如果你現在就是想躺平，也可以直說）",
+                "2. 如果五年後你回看現在，你會對自己目前的停滯感到遺憾嗎？遺憾什麼？",
+                "3. 你覺得自己目前被什麼框架或別人的期待給綁住了？",
+                "4. 你平常把最多時間和精力花在哪裡？這跟你的核心價值觀一致嗎？",
+                "5. 如果生活必須砍掉重練，你最想拾回或嘗試的是什麼？",
+                "6. 你覺得現在的生活是「你在過生活」，還是「生活在過你」？",
+                "7. 讓你感到最自豪、最有成就感的時期是在什麼時候？當時具備了什麼條件？",
+                "8. 你對於「失敗」的定義是什麼？是因為這個定義讓你裹足不前嗎？",
+                "9. 如果完全不用管別人的眼光與批判，你最想成為一個怎樣的人？",
+                "10. 阻礙你跨出舒適圈最大的內在阻力，究竟是懶惰、恐懼、還是對現狀的麻木？"
+            ]
+        };
+
+        function startDiagnosis(category) {
+            selectedCategory = category;
+            currentQIndex = 0;
+            userAnswers = [];
+            
+            document.getElementById('q-category-tag').innerText = `${category}領域 (10題深度版)`;
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-question').classList.remove('hidden');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            document.getElementById('current-q-num').innerText = currentQIndex + 1;
+            document.getElementById('question-text').innerText = questionsMap[selectedCategory][currentQIndex];
+            document.getElementById('answer-input').value = userAnswers[currentQIndex] || '';
+
+            const prevBtn = document.getElementById('prev-btn');
+            if(currentQIndex > 0) {
+                prevBtn.classList.remove('hidden');
+            } else {
+                prevBtn.classList.add('hidden');
+            }
+        }
+
+        function nextQuestion() {
+            const ans = document.getElementById('answer-input').value.trim();
+            if(!ans) {
+                alert('請簡單寫下您的想法，這有助於 Gemini AI 為你進行精準盲點解構！');
+                return;
+            }
+            userAnswers[currentQIndex] = ans;
+            currentQIndex++;
+
+            if(currentQIndex < 10) {
+                loadQuestion();
+            } else {
+                triggerAiAnalysis();
+            }
+        }
+
+        function prevQuestion() {
+            const ans = document.getElementById('answer-input').value.trim();
+            userAnswers[currentQIndex] = ans;
+
+            if(currentQIndex > 0) {
+                currentQIndex--;
+                loadQuestion();
+            }
+        }
+
+        async function triggerAiAnalysis() {
+            document.getElementById('view-question').classList.add('hidden');
+            document.getElementById('view-loading').classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        category: selectedCategory,
+                        answers: userAnswers
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('AI 分析請求失敗');
+                }
+
+                aiReportData = await response.json();
+
+                document.getElementById('summary-text').innerText = aiReportData.summary;
+
+                document.getElementById('view-loading').classList.add('hidden');
+                document.getElementById('view-result').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('AI 分析生成發生錯誤，請確認網路連線或 API Key 設定後重試。');
+                document.getElementById('view-loading').classList.add('hidden');
+                document.getElementById('view-question').classList.remove('hidden');
+            }
+        }
+
+        function openCheckoutModal() {
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+        }
+
+        function processPaymentAndUnlock() {
+            const email = document.getElementById('modal-email').value.trim();
+            if(!email || !email.includes('@')) {
+                alert('請輸入有效的常用 Email！');
+                return;
+            }
+
+            console.log("【學員名單收集成功】", {
+                email: email,
+                category: selectedCategory,
+                answers: userAnswers,
+                report: aiReportData
+            });
+
+            closeCheckoutModal();
+            document.getElementById('view-result').classList.add('hidden');
+            document.getElementById('view-full-report').classList.remove('hidden');
+
+            renderFullReport();
+        }
+
+        function renderFullReport() {
+            if (!aiReportData) return;
+
+            const coreHtml = aiReportData.coreBlock.map(p => `<p class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/60">${p}</p>`).join('');
+            document.getElementById('full-core-block').innerHTML = coreHtml;
+
+            document.getElementById('full-resources').innerText = aiReportData.resources;
+            document.getElementById('full-boundaries').innerText = aiReportData.boundaries;
+
+            const expHtml = aiReportData.experiments.map(exp => `
+                <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+                    <div class="font-bold text-amber-400 text-xs mb-1">🧪 ${exp.title}</div>
+                    <div class="text-xs text-slate-300">${exp.description}</div>
+                </div>
+            `).join('');
+            document.getElementById('full-experiments').innerHTML = expHtml;
+        }
+
+        function resetApp() {
+            document.getElementById('view-full-report').classList.add('hidden');
+            document.getElementById('view-home').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
