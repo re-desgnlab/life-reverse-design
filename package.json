@@ -1,0 +1,8 @@
+{
+  "name": "life-reverse-design",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@google/genai": "^0.1.2"
+  }
+}
