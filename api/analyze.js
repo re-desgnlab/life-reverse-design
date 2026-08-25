@@ -1,87 +1,200 @@
 export default async function handler(req, res) {
+  // 只允許 POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).json({
+      error: '只允許使用 POST 請求'
+    });
   }
 
-  const { category, answers } = req.body;
+  try {
+    const { category, answers } = req.body || {};
 
-  if (!category || !answers || !Array.isArray(answers)) {
-    return res.status(400).json({ error: '無效的輸入資料' });
-  }
+    // 檢查前端送進來的資料
+    if (
+      !category ||
+      typeof category !== 'string' ||
+      !Array.isArray(answers) ||
+      answers.length !== 10
+    ) {
+      return res.status(400).json({
+        error: '輸入資料格式不正確，請確認已完成全部 10 題。'
+      });
+    }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: '未設定 GEMINI_API_KEY 環境變數' });
-  }
+    const cleanedAnswers = answers.map((answer) =>
+      typeof answer === 'string' ? answer.trim() : ''
+    );
 
-  const answersText = answers.map((ans, idx) => `[第 ${idx + 1} 題]${ans}`).join('\n');
+    if (cleanedAnswers.some((answer) => !answer)) {
+      return res.status(400).json({
+        error: '所有題目都必須填寫。'
+      });
+    }
 
-  const prompt = `
+    // 從 Vercel Environment Variables 取得 API Key
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      console.error('Missing GEMINI_API_KEY');
+
+      return res.status(500).json({
+        error: '伺服器尚未設定 Gemini API Key。'
+      });
+    }
+
+    const answersText = cleanedAnswers
+      .map((answer, index) => {
+        return `[第 ${index + 1} 題]\n${answer}`;
+      })
+      .join('\n\n');
+
+    const prompt = `
 你現在是「人生反向設計所」的資深反向設計教練與心智解構專家。
-你的風格是：犀利、直戳核心、不說教、不盲目正能量、不套用無效的罐頭文字。擅長透過逆向思維幫使用者看穿潛意識盲點與防禦機制。
 
-使用者進行了【${category}】領域的 10 題深度診斷。以下是他們的完整回答：
+你的分析風格：
+1. 犀利、具體、直指核心。
+2. 不說教、不責備、不盲目正能量。
+3. 不使用空泛或罐頭式文字。
+4. 必須根據使用者實際回答進行分析。
+5. 避免進行醫療或心理疾病診斷。
+6. 透過逆向思維，協助使用者辨識內在衝突、盲點、資源與可行突破口。
+
+使用者進行的是【${category}】領域的 10 題深度診斷。
+
+以下是使用者的完整回答：
+
 ${answersText}
 
-請嚴格審視使用者回答中的文字細節，並輸出嚴格的 JSON 格式（不可包含 Markdown 或額外文字，也不要使用 ```json 程式碼區塊）：
+請只輸出合法 JSON，不要加入 Markdown、程式碼區塊或任何額外說明。
+
+JSON 格式必須完全符合以下結構：
 
 {
-  "summary": "免費診斷摘要（約 80-120 字，直指其核心矛盾，具體引用回答細節，不說空話）",
+  "summary": "免費診斷摘要，約 80 至 120 個中文字。請直指核心矛盾，並具體呼應使用者回答中的內容。",
   "coreBlock": [
-    "段落一：行為與內在的衝突根源剖析",
-    "段落二：隱性盲點解構",
-    "段落三：破局的關鍵突破口"
+    "行為與內在衝突的根源分析",
+    "使用者尚未察覺的隱性盲點",
+    "目前最關鍵的突破方向"
   ],
-  "resources": "現有可調動資源盤點（條列 2 點）",
-  "boundaries": "不能接受的底線紅線（條列 2 點）",
+  "resources": "列出 2 項使用者目前可以調動的資源，以換行方式呈現。",
+  "boundaries": "列出 2 項使用者不能再繼續接受或犧牲的底線，以換行方式呈現。",
   "experiments": [
     {
       "title": "實驗一名稱",
-      "description": "具體微行動說明（3天內可做、低成本）"
+      "description": "一個能在 3 天內完成的低成本具體行動。"
     },
     {
       "title": "實驗二名稱",
-      "description": "具體微行動說明（48小時內可做）"
+      "description": "一個能在 48 小時內完成的具體行動。"
     },
     {
       "title": "實驗三名稱",
-      "description": "具體微行動說明（邊界或反向設計練習）"
+      "description": "一個與界線建立或人生反向設計有關的具體練習。"
     }
   ]
 }
 `;
 
-  try {
-    const response = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$){apiKey}`, {
+    const geminiUrl =
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent';
+
+    const geminiResponse = await fetch(geminiUrl, {
       method: 'POST',
+
       headers: {
         'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey
       },
+
       body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }],
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+
         generationConfig: {
           responseMimeType: 'application/json',
-          temperature: 0.7
+          thinkingConfig: {
+            thinkingLevel: 'low'
+          }
         }
       })
     });
 
-    const data = await response.json();
-    
-    if (!response.ok) {
-      console.error('Gemini API Error Response:', data);
-      return res.status(500).json({ error: data.error?.message || 'AI 診斷生成失敗' });
+    const geminiData = await geminiResponse.json();
+
+    if (!geminiResponse.ok) {
+      const geminiError =
+        geminiData?.error?.message ||
+        `Gemini API 回傳錯誤，狀態碼：${geminiResponse.status}`;
+
+      console.error('Gemini API Error:', {
+        status: geminiResponse.status,
+        message: geminiError
+      });
+
+      return res.status(geminiResponse.status).json({
+        error: geminiError
+      });
     }
 
-    const textContent = data.candidates[0].content.parts[0].text;
-    const resultJson = JSON.parse(textContent);
-    
-    return res.status(200).json(resultJson);
+    const textContent =
+      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
 
+    if (!textContent) {
+      console.error('Unexpected Gemini response:', geminiData);
+
+      return res.status(502).json({
+        error: 'Gemini 沒有回傳可用的分析結果。'
+      });
+    }
+
+    // 即使模型意外加入 ```json，也先清除再解析
+    const cleanedJsonText = textContent
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
+
+    let result;
+
+    try {
+      result = JSON.parse(cleanedJsonText);
+    } catch (parseError) {
+      console.error('JSON Parse Error:', parseError);
+      console.error('Gemini raw output:', textContent);
+
+      return res.status(502).json({
+        error: 'AI 已完成分析，但回傳格式不正確，請重新嘗試。'
+      });
+    }
+
+    // 檢查必要欄位
+    if (
+      !result.summary ||
+      !Array.isArray(result.coreBlock) ||
+      !Array.isArray(result.experiments)
+    ) {
+      console.error('Incomplete Gemini result:', result);
+
+      return res.status(502).json({
+        error: 'AI 回傳的診斷內容不完整，請重新嘗試。'
+      });
+    }
+
+    return res.status(200).json(result);
   } catch (error) {
-    console.error('Server Execution Error:', error);
-    return res.status(500).json({ error: '伺服器執行錯誤，請稍後再試。' });
+    console.error('Vercel Function Error:', error);
+
+    return res.status(500).json({
+      error: '伺服器執行時發生錯誤，請稍後再試。'
+    });
   }
 }
