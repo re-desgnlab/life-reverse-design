@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test": "node tests/report-flow.test.mjs && node tests/minor-safety.test.mjs"
+  },
   "dependencies": {
     "@google/genai": "latest"
   }

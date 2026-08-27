@@ -28,6 +28,12 @@ const PROMPT_INJECTION_PATTERNS = [
   /忽略.{0,12}(前面|先前|以上).{0,12}(指令|提示)/,
   /(印出|顯示|洩漏|透露|複述).{0,16}(系統提示|系統指令|system prompt)/i
 ];
+const EXPLICIT_MINOR_PATTERNS = [
+  /(?:^|[，,。.!！？?\s])(?:我|本人)(?:今年|現在)?\s*(?:1[0-7]|[0-9])\s*歲(?:[，,。.!！？?\s]|$)/,
+  /(?:我是|我還是|本人是)\s*(?:未成年|國中生|高中生|高職生)/,
+  /我(?:目前|現在|還)?(?:在)?(?:念|讀|就讀)(?:國中|高中|高職|五專)/,
+  /我(?:尚未|還沒|未)滿\s*18\s*歲/
+];
 
 export default async function handler(req, res) {
   setSecurityHeaders(res);
@@ -49,7 +55,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { answers, turnstileToken } = req.body || {};
+    const { answers, turnstileToken, adultConfirmed } = req.body || {};
+
+    if (adultConfirmed !== true) {
+      return res.status(403).json({
+        error: '此分析目前僅提供已滿18歲者使用。',
+        code: 'MINOR_SAFETY_RESTRICTION'
+      });
+    }
 
     if (!Array.isArray(answers)) {
       return res.status(400).json({
@@ -89,6 +102,13 @@ export default async function handler(req, res) {
       return res.status(400).json({
         error: '回答中包含無法分析的指令式內容，請改用自己的經驗與感受作答。',
         code: 'UNSAFE_INPUT'
+      });
+    }
+
+    if (cleanedAnswers.some(containsExplicitMinorSelfIdentification)) {
+      return res.status(403).json({
+        error: '此分析目前僅提供已滿18歲者使用。',
+        code: 'MINOR_SAFETY_RESTRICTION'
       });
     }
 
@@ -158,6 +178,10 @@ export default async function handler(req, res) {
 - 若主要困擾是工作，不得無故延伸至伴侶、家庭或原生家庭。
 - 若主要困擾是金錢，行動需符合回答中的真實財務條件，不得要求重大投資或財務決定。
 - 若跨越多個情境，只選一個最優先卡點，其餘僅作為連動因素。
+
+【年齡與兒少安全邊界】
+本服務只提供已滿18歲者使用。若回答仍出現使用者可能未滿18歲的線索，不得鼓勵或提供下列行動：離家出走、自行搬遷、隱瞞行蹤、封鎖監護人、投靠陌生人或網友、私下借款或租屋、規避警方或社福人員、報復或斷絕關係。
+若屬一般家庭衝突，應優先建議暫緩重大決定，尋求可信任的成年親友、老師、學校輔導人員或其他適當支持。若涉及暴力、性侵害、嚴重疏忽、威脅或立即人身危險，不得要求使用者留在危險環境、忍耐或自行與加害者和解；應優先引導取得可信任成人與兒少保護資源協助。在台灣可聯絡113，若有立即危險則撥打110。
 
 以下是使用者的完整回答：
 
@@ -327,6 +351,10 @@ function normalizeUserText(value) {
 
 function containsPromptInjection(value) {
   return PROMPT_INJECTION_PATTERNS.some((pattern) => pattern.test(value));
+}
+
+function containsExplicitMinorSelfIdentification(value) {
+  return EXPLICIT_MINOR_PATTERNS.some((pattern) => pattern.test(value));
 }
 
 function setSecurityHeaders(res) {

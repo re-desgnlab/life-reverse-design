@@ -43,6 +43,10 @@
                     <p>卡點往往不只來自一件事，而是現況、需求與應對方式長期交織的結果。</p>
                     <p class="text-sm text-slate-300">請從最近一次讓你感到困擾、猶豫或消耗的真實經驗開始作答。</p>
                 </div>
+                <label class="flex items-start gap-3 bg-slate-900/50 border border-slate-800 rounded-xl p-4 text-xs text-slate-400 cursor-pointer text-left">
+                    <input id="adult-entry-confirmation" type="checkbox" class="mt-0.5 accent-amber-500">
+                    <span>我確認自己已滿18歲，並了解此工具不取代心理、醫療、法律或緊急協助。</span>
+                </label>
                 <button onclick="startDiagnosis()" class="w-full py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-2xl transition-all shadow-lg shadow-amber-500/10">
                     開始分析
                 </button>
@@ -83,11 +87,26 @@
             </div>
             <div class="space-y-2">
                 <h3 class="text-lg font-bold text-white">正在整理你的 10 項回答...</h3>
-                <p id="loading-status-text" class="text-xs text-slate-400">正在分析你的潛意識抗拒與心智盲點...</p>
+                <p id="loading-status-text" class="text-xs text-slate-400">正在整理情境、需求、阻力與可行的下一步...</p>
             </div>
         </div>
 
-        <!-- 4. 診斷結果報告（免費摘要 + 付費鎖定） -->
+        <!-- 未成年安全引導：不呼叫AI、不蒐集資料 -->
+        <div id="view-minor-safety" class="hidden space-y-5">
+            <div class="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 space-y-4">
+                <span class="inline-block text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">未成年使用者安全提醒</span>
+                <h2 class="text-xl font-black text-white">先不要獨自做出離家或重大決定</h2>
+                <p class="text-sm text-slate-300 leading-relaxed">這個分析目前僅提供已滿18歲者使用，因此不會保存或分析這次回答。若是一般家庭衝突，可以先找一位你信任的成年親友、老師或學校輔導人員，一起釐清安全且可行的下一步。</p>
+                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-2 text-xs text-slate-300 leading-relaxed">
+                    <p>如果你正遭遇暴力、性侵害、嚴重疏忽或人身威脅，不需要獨自承受，也不要投靠陌生人或網友。</p>
+                    <p><strong class="text-amber-400">台灣113保護專線：</strong>24小時兒少保護與家庭暴力諮詢。</p>
+                    <p><strong class="text-rose-400">立即危險：</strong>請撥110，或前往有工作人員及可信任成人的安全場所。</p>
+                </div>
+                <button onclick="resetMinorSafety()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl transition-all">返回首頁</button>
+            </div>
+        </div>
+
+        <!-- 4. 診斷結果報告（免費摘要 + Email完整報告） -->
         <div id="view-result" class="hidden space-y-6">
             <div class="bg-gradient-to-br from-amber-500/10 to-slate-900 border border-amber-500/30 rounded-3xl p-6 space-y-4">
                 <div class="flex items-center justify-between">
@@ -100,20 +119,19 @@
                 </p>
             </div>
 
-            <!-- 付費解鎖牆 -->
+            <!-- Email完整報告 -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center space-y-4 relative overflow-hidden">
                 <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl"></div>
                 
                 <div class="space-y-2">
-                    <div class="text-amber-400 font-bold text-sm">🔒 解鎖反向設計完整解方</div>
-                    <h3 class="text-xl font-black text-white">解鎖深度卡點解構 & 3 個專屬低成本實驗</h3>
-                    <p class="text-xs text-slate-400 max-w-xs mx-auto">包含依據你的回答生成的深度分析、現有資源、底線條件與破局實驗。</p>
+                    <div class="text-amber-400 font-bold text-sm">📩 將完整報告寄到你的Email</div>
+                    <h3 class="text-xl font-black text-white">取得深度卡點解構與3個低成本實驗</h3>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto">完整報告包含判斷依據、因應模式、可控範圍、現有資源、界線與下一步實驗。</p>
                 </div>
 
                 <div class="pt-2">
-                    <div class="text-2xl font-black text-white mb-3">NT$ 199 <span class="text-xs text-slate-500 font-normal">/ 一次解鎖，完整擁有</span></div>
                     <button onclick="openCheckoutModal()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black rounded-2xl transition-all shadow-xl shadow-amber-500/20">
-                        立即解鎖完整報告 (NT$199)
+                        免費寄送完整報告
                     </button>
                 </div>
             </div>
@@ -122,7 +140,7 @@
         <!-- 5. 完整報告頁（解鎖後） -->
         <div id="view-full-report" class="hidden space-y-6">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">✓ 已解鎖 AI 反向設計完整報告</span>
+                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">✓ 完整分析報告已寄出</span>
                 <button onclick="resetApp()" class="text-xs text-slate-400 hover:text-white underline">重新檢測</button>
             </div>
 
@@ -200,30 +218,51 @@
 
     </main>
 
-    <!-- 💳 結帳與 Email 收集彈窗 -->
-    <div id="checkout-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-5 relative shadow-2xl">
+    <!-- Email與資料同意彈窗 -->
+    <div id="checkout-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full max-h-[92vh] overflow-y-auto p-6 space-y-5 relative shadow-2xl">
             <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-sm">✕</button>
 
             <div class="space-y-2 text-center">
-                <span class="text-xs font-bold text-amber-400 bg-amber-500/20 px-3 py-1 rounded-full">人生反向設計所・安全結帳</span>
-                <h3 class="text-xl font-black text-white">解鎖完整報告與學員帳戶</h3>
-                <p class="text-xs text-slate-400">請輸入常用 Email（用於報告備份與發送後續陪伴資源）</p>
+                <span class="text-xs font-bold text-amber-400 bg-amber-500/20 px-3 py-1 rounded-full">人生反向設計所・私人報告</span>
+                <h3 class="text-xl font-black text-white">將完整報告寄到Email</h3>
+                <p class="text-xs text-slate-400">系統會保存本次回答與分析90天，並寄送一組私人報告連結。</p>
             </div>
 
             <div class="space-y-4 pt-2">
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">您的常用 Email</label>
-                    <input type="email" id="modal-email" placeholder="name@example.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <label for="modal-name" class="block text-xs font-bold text-slate-300 mb-1">姓名</label>
+                    <input type="text" id="modal-name" name="name" autocomplete="name" maxlength="80" placeholder="請輸入姓名" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
                 </div>
 
-                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 space-y-2 text-xs text-slate-400">
-                    <div class="flex justify-between"><span>項目：人生卡住診斷 Pro 完整報告</span><span class="text-white font-bold">NT$199</span></div>
-                    <div class="flex justify-between border-t border-slate-800/80 pt-2 font-bold text-white"><span>總計金額</span><span class="text-amber-400">NT$199</span></div>
+                <div>
+                    <label for="modal-birth-date" class="block text-xs font-bold text-slate-300 mb-1">生日</label>
+                    <input type="date" id="modal-birth-date" name="birth-date" autocomplete="bday" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
                 </div>
 
-                <button onclick="processPaymentAndUnlock()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black rounded-2xl transition-all shadow-xl shadow-amber-500/20">
-                    確認付款 NT$199 並解鎖報告
+                <div>
+                    <label for="modal-email" class="block text-xs font-bold text-slate-300 mb-1">你的常用Email</label>
+                    <input type="email" id="modal-email" name="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="name@example.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 space-y-3 text-xs text-slate-400 text-left">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input id="adult-report-confirmation" type="checkbox" class="mt-0.5 accent-amber-500">
+                        <span>我確認本人已滿18歲，且以上生日資料正確。<span class="text-rose-400">（必要）</span></span>
+                    </label>
+                    <label class="flex items-start gap-3 cursor-pointer border-t border-slate-800 pt-3">
+                        <input id="report-consent" type="checkbox" class="mt-0.5 accent-amber-500">
+                        <span>我同意人生反向設計所蒐集本次姓名、生日、Email、十題回答與分析報告，用於確認成年資格、保存及寄送本次私人報告。資料保存90天後自動刪除。<span class="text-rose-400">（必要）</span></span>
+                    </label>
+                    <label class="flex items-start gap-3 cursor-pointer border-t border-slate-800 pt-3">
+                        <input id="marketing-consent" type="checkbox" class="mt-0.5 accent-amber-500">
+                        <span>我願意收到後續練習、產品測試及人生反向設計所的內容通知，可隨時取消訂閱。<span class="text-slate-500">（選填）</span></span>
+                    </label>
+                </div>
+
+                <p id="report-submit-status" class="hidden text-xs text-center"></p>
+                <button id="report-submit-button" onclick="saveAndEmailReport()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black rounded-2xl transition-all shadow-xl shadow-amber-500/20">
+                    寄送我的完整報告
                 </button>
             </div>
         </div>
@@ -249,6 +288,7 @@
         });
 
         initializeTurnstile();
+        setAdultBirthDateLimit();
 
         async function initializeTurnstile() {
             try {
@@ -289,6 +329,10 @@
         ];
 
         function startDiagnosis() {
+            if (!document.getElementById('adult-entry-confirmation').checked) {
+                alert('此測驗目前僅提供已滿18歲者使用，請先確認年齡資格。');
+                return;
+            }
             currentQIndex = 0;
             userAnswers = [];
             
@@ -357,11 +401,17 @@
                     body: JSON.stringify({
                         category: selectedCategory,
                         answers: userAnswers,
+                        adultConfirmed: document.getElementById('adult-entry-confirmation').checked,
                         turnstileToken
                     })
                 });
 
                 const responseData = await response.json().catch(() => ({}));
+                if (responseData.code === 'MINOR_SAFETY_RESTRICTION') {
+                    document.getElementById('view-loading').classList.add('hidden');
+                    document.getElementById('view-minor-safety').classList.remove('hidden');
+                    return;
+                }
                 if (!response.ok) throw new Error(responseData.error || 'AI 分析請求失敗');
                 aiReportData = responseData;
 
@@ -391,25 +441,119 @@
             document.getElementById('checkout-modal').classList.add('hidden');
         }
 
-        function processPaymentAndUnlock() {
+        async function saveAndEmailReport() {
+            const name = document.getElementById('modal-name').value.trim();
+            const birthDate = document.getElementById('modal-birth-date').value;
             const email = document.getElementById('modal-email').value.trim();
-            if(!email || !email.includes('@')) {
-                alert('請輸入有效的常用 Email！');
+            const adultConfirmed = document.getElementById('adult-report-confirmation').checked;
+            const consent = document.getElementById('report-consent').checked;
+            const marketingOptIn = document.getElementById('marketing-consent').checked;
+            const button = document.getElementById('report-submit-button');
+            const status = document.getElementById('report-submit-status');
+
+            if (!name) {
+                showReportStatus('請輸入姓名。', true);
+                return;
+            }
+            if (!birthDate || !isAdultBirthDate(birthDate)) {
+                showReportStatus('此測驗與報告寄送目前僅提供已滿18歲者使用。', true);
+                return;
+            }
+            if (!email || !email.includes('@')) {
+                showReportStatus('請輸入有效的常用Email。', true);
+                return;
+            }
+            if (!adultConfirmed) {
+                showReportStatus('請確認本人已滿18歲且生日資料正確。', true);
+                return;
+            }
+            if (!consent) {
+                showReportStatus('請先確認必要的資料蒐集與報告寄送說明。', true);
+                return;
+            }
+            if (!aiReportData || userAnswers.length !== 10) {
+                showReportStatus('本次分析資料不完整，請重新完成分析。', true);
                 return;
             }
 
-            console.log("【學員名單收集成功】", {
-                email: email,
-                category: selectedCategory,
-                answers: userAnswers,
-                report: aiReportData
-            });
+            button.disabled = true;
+            button.textContent = '正在安全保存並寄送…';
+            status.classList.add('hidden');
 
-            closeCheckoutModal();
-            document.getElementById('view-result').classList.add('hidden');
-            document.getElementById('view-full-report').classList.remove('hidden');
+            try {
+                const response = await fetch('/api/save-report', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-App-Request': 'life-reverse-design'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        birthDate,
+                        email,
+                        answers: userAnswers,
+                        report: aiReportData,
+                        consent,
+                        adultConfirmed,
+                        marketingOptIn,
+                        source: getTrafficSource()
+                    })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || '報告寄送失敗，請稍後再試。');
 
-            renderFullReport();
+                showReportStatus('完整報告已寄出，請檢查Email收件匣。', false);
+                setTimeout(() => {
+                    closeCheckoutModal();
+                    document.getElementById('view-result').classList.add('hidden');
+                    document.getElementById('view-full-report').classList.remove('hidden');
+                    renderFullReport();
+                }, 700);
+            } catch (error) {
+                showReportStatus(error.message, true);
+            } finally {
+                button.disabled = false;
+                button.textContent = '寄送我的完整報告';
+            }
+        }
+
+        function showReportStatus(message, isError) {
+            const status = document.getElementById('report-submit-status');
+            status.textContent = message;
+            status.className = `text-xs text-center ${isError ? 'text-rose-400' : 'text-emerald-400'}`;
+        }
+
+        function setAdultBirthDateLimit() {
+            document.getElementById('modal-birth-date').max = getAdultCutoffDate();
+        }
+
+        function getAdultCutoffDate() {
+            const today = new Date();
+            const year = today.getFullYear() - 18;
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function isAdultBirthDate(value) {
+            return /^\d{4}-\d{2}-\d{2}$/.test(value) && value <= getAdultCutoffDate();
+        }
+
+        function resetMinorSafety() {
+            document.getElementById('view-minor-safety').classList.add('hidden');
+            document.getElementById('view-home').classList.remove('hidden');
+        }
+
+        function getTrafficSource() {
+            const params = new URLSearchParams(window.location.search);
+            const taggedSource = params.get('utm_source') || params.get('source');
+            if (taggedSource) return taggedSource;
+            if (!document.referrer) return 'direct';
+            try {
+                return new URL(document.referrer).hostname || 'referral';
+            } catch {
+                return 'referral';
+            }
         }
 
         function renderFullReport() {
