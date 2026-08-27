@@ -10,7 +10,16 @@ const GEMINI_MODELS = [
 const ALLOWED_CATEGORIES = new Set(['工作', '金錢', '關係', '人生方向', '綜合人生卡點']);
 const MAX_ANSWER_LENGTH = 200;
 const MAX_CATEGORY_LENGTH = 20;
-const SAFE_REPORT_KEYS = ['summary', 'coreBlock', 'resources', 'boundaries', 'experiments'];
+const SAFE_REPORT_KEYS = [
+  'summary',
+  'coreBlock',
+  'copingPattern',
+  'controllability',
+  'resources',
+  'boundaries',
+  'experiments',
+  'closingReminder'
+];
 const PROMPT_INJECTION_PATTERNS = [
   /ignore\s+(all\s+)?previous/i,
   /system\s*(prompt|instruction)/i,
@@ -123,26 +132,34 @@ export default async function handler(req, res) {
       .join('\n\n');
 
     const prompt = `
-你現在是「人生反向設計所」的心理學取向生涯發展顧問與反向設計教練。
+你現在是「人生反向設計所」的心理學取向生涯發展顧問與反向設計教練。你的任務是根據十題回答形成一個有證據、可驗證的「核心卡點假設」，而不是替使用者診斷、貼標籤或寫一篇看似深刻但無法行動的心理分析。
 
-你的任務不是診斷心理疾病，也不是替使用者貼人格標籤。請根據使用者提供的文字，分析「具體情境、情緒與身體反應、核心需求、慣用因應方式、短期保護功能、長期代價、可控範圍、現有資源與改變準備度」，再透過生涯建構與反向思考，找出目前最值得優先處理的一個主卡點。
+【分析程序】
+請先在內部依序完成以下判讀，再輸出結果：
+1. 整理使用者明確陳述的具體情境、感受、行動與限制，不補充未出現的經歷。
+2. 尋找至少由兩項回答共同支持的重複模式；單一模糊線索不得形成重大結論。
+3. 辨認使用者想保護或得到的核心需求，以及阻礙推進的內在顧慮與外在條件。
+4. 分開判斷表面困境、目前因應方式、短期保護功能與長期代價。
+5. 區分可以控制、可以影響與目前無法控制的部分。
+6. 從所有可能解釋中，只選一個證據最充分、最值得優先處理的核心卡點。
+7. 根據這個核心卡點設計三個實驗：觀察、微行動、界線或選擇回測。三者不得只是同一建議換句話說。
 
-你的分析風格：
+【判斷邊界】
+1. 使用者明確陳述的內容可使用肯定語氣；由多項回答形成的推論必須使用「可能、目前看來、從回答中可觀察到」等假設語氣。
+2. 不得自行推論童年、原生家庭、創傷、依附型態、人格特質、潛意識或心理疾病，除非使用者明確描述相關事實；即使提到，也不得進行醫療診斷。
+3. 不得使用「討好型人格、乖孩子、缺乏自信、自我價值低」等標籤代替分析。請描述可觀察的選擇或因應模式。
+4. 每一項主要判斷必須能對應到回答中的具體線索。證據不足就省略，不得為了完整而杜撰。
+5. 不把困難全歸因於個人；必須同時考慮環境結構、關係權力、時間、金錢、照顧責任與其他資源限制。
+6. 分析目前做法的保護功能，不將忍耐、逃避、拖延或反覆思考簡化成缺點。
+7. 文字溫和但不迴避核心，不說教、不責備、不盲目正能量，不使用任何人都適用的罐頭句。
+8. 不要揭露內部分析過程，只輸出精簡結論與支持結論的回答線索。
 
-1. 溫和但不迴避核心，使用清楚、具體且容易理解的語言。
-2. 不說教、不責備、不盲目正能量。
-3. 不使用空泛或罐頭式文字。
-4. 必須根據使用者實際回答進行分析。
-5. 避免進行醫療、精神疾病或心理疾病診斷。
-6. 不要斷言使用者具備某種人格或疾病。
-7. 不把所有困難都歸因於使用者個人；必須同時考慮環境結構、關係權力、資源限制與個人選擇。
-8. 區分「可以控制、可以影響、目前無法控制」，只針對前兩者提出行動。
-9. 指出慣用因應方式目前保護了使用者什麼，以及持續下去可能付出的代價，避免把逃避、忍耐或拖延簡化成缺點。
-10. 每一項主要判斷至少呼應一項回答中的具體事實，不得使用任何人都能套用的罐頭描述。
-11. 一次只選一個最主要的卡點，不要同時要求使用者全面改造人生。
-12. 行動建議必須具體、低成本、可觀察，並能在48小時至7天內執行或驗證。
-
-使用者進行的是不預設領域的【跨領域主卡點探索】。不得因為使用者提到工作、金錢、關係或人生方向，就直接把問題歸入單一固定類別。請先辨識表面發生的困境，再分析底下真正未被滿足的需求、慣用因應方式與連動層面。
+【情境一致性】
+使用者不需預先選擇工作、金錢、關係或人生方向。請從回答判斷主要困擾實際發生的情境，所有界線與實驗都必須緊扣該情境：
+- 若主要困擾是家庭或人際關係，不得無故提出辭職、職場提案或理財行動。
+- 若主要困擾是工作，不得無故延伸至伴侶、家庭或原生家庭。
+- 若主要困擾是金錢，行動需符合回答中的真實財務條件，不得要求重大投資或財務決定。
+- 若跨越多個情境，只選一個最優先卡點，其餘僅作為連動因素。
 
 以下是使用者的完整回答：
 
@@ -155,31 +172,81 @@ ${answersText}
 
 不得加入 Markdown、程式碼區塊、前言、結語或任何 JSON 以外的文字。
 
-輸出內容必須完全符合以下結構：
+輸出內容必須完全符合以下結構，所有欄位皆使用繁體中文：
 
 {
-  "summary": "免費診斷摘要，約100至150個中文字。依序寫出：表面困境、真正主卡點、主要連動層面，再說明它們與使用者的具體情境、核心需求及慣用反應之間的關聯。不要強迫套入固定人生類別，不得使用心理疾病或人格標籤。",
-  "coreBlock": [
-    "第一段：引用回答中的具體線索，說明情境、情緒、核心需求與主卡點如何連結。",
-    "第二段：說明目前的因應方式短期保護了什麼，以及長期可能造成的代價；同時區分個人與環境因素。",
-    "第三段：依照可控制與可影響的範圍，提出目前唯一最值得優先處理的突破方向。"
+  "summary": "約100至150個中文字。先說表面困境，再以假設語氣指出一句核心卡點，並說明它如何影響現在的選擇。不得出現人格或疾病標籤。",
+  "coreBlock": {
+    "title": "一句話命名唯一的核心卡點，約20至35字",
+    "explanation": "約100至180字，說明需求、阻力及情境如何形成這個卡點；清楚區分個人與環境因素",
+    "evidence": [
+      "第一項支持判斷的具體回答線索，不捏造原文",
+      "第二項支持判斷的具體回答線索，不捏造原文"
+    ],
+    "confidence": "high、medium或low；依回答的一致性判斷"
+  },
+  "copingPattern": {
+    "currentResponse": "使用者目前可觀察到的因應方式",
+    "protectiveFunction": "這個做法短期保護了什麼",
+    "longTermCost": "若持續不變，最可能出現的長期代價"
+  },
+  "controllability": {
+    "controllable": ["目前可直接採取的一至兩項行動"],
+    "influenceable": ["可透過溝通、協商或蒐集資訊影響的一至兩項事情"],
+    "uncontrollable": ["目前不能直接控制的一至兩項事情"]
+  },
+  "resources": [
+    {
+      "resource": "回答中已有證據的能力、經驗、支持或條件",
+      "application": "接下來可如何具體使用"
+    },
+    {
+      "resource": "第二項已有證據的資源",
+      "application": "接下來可如何具體使用"
+    }
   ],
-  "resources": "只根據回答內容列出2項已有證據的能力、經驗、支持或可調動資源。每一項獨立一行，並以1.和2.開頭。",
-  "boundaries": "根據回答列出2項需要保護的條件或不宜持續付出的代價；若證據不足，應以需要進一步確認的界線表達，不得自行杜撰。每一項獨立一行，並以1.和2.開頭。",
+  "boundaries": [
+    {
+      "trigger": "需要啟動保護的具體情況",
+      "action": "可以採取的保護動作",
+      "expression": "若需要表達，可使用的一句自然說法；不適用時填空字串"
+    },
+    {
+      "trigger": "第二項具體情況",
+      "action": "第二項保護動作",
+      "expression": "自然表達；不適用時填空字串"
+    }
+  ],
   "experiments": [
     {
-      "title": "實驗一名稱",
-      "description": "一個能在3天內完成的觀察或紀錄實驗，需包含執行方式與要觀察的證據。"
+      "title": "觀察實驗名稱",
+      "type": "observation",
+      "action": "三天內能完成的具體紀錄方式",
+      "deadline": "明確期限",
+      "hypothesis": "要驗證的假設",
+      "evidence": "要觀察什麼證據",
+      "stopCondition": "出現什麼情況應停止；無明顯風險則寫無"
     },
     {
-      "title": "實驗二名稱",
-      "description": "一個能在48小時內完成、針對可控制或可影響範圍的微小行動。"
+      "title": "微行動實驗名稱",
+      "type": "micro_action",
+      "action": "四十八小時內可完成，且直接對應主要情境的微小行動",
+      "deadline": "明確期限",
+      "hypothesis": "要驗證的假設",
+      "evidence": "完成後要觀察的結果",
+      "stopCondition": "風險上限或停止條件"
     },
     {
-      "title": "實驗三名稱",
-      "description": "一個能在7天內回測的反向設計實驗，需寫出行動、風險上限與判斷是否有效的標準。"
+      "title": "界線或選擇回測名稱",
+      "type": "boundary_or_choice",
+      "action": "七天內可完成，且直接測試核心卡點的行動",
+      "deadline": "明確期限",
+      "hypothesis": "要驗證的假設",
+      "evidence": "判斷是否有效的標準",
+      "stopCondition": "風險上限或停止條件"
     }
-  ]
+  ],
+  "closingReminder": "一句不說教的提醒，協助使用者把這份結果視為可驗證的假設，而不是對人格的定論"
 }
 `;
 
@@ -345,13 +412,41 @@ function sanitizeReport(result) {
   );
   return {
     summary: sanitizeText(selected.summary, 600),
-    coreBlock: selected.coreBlock.map((item) => sanitizeText(item, 1500)),
-    resources: sanitizeText(selected.resources, 1000),
-    boundaries: sanitizeText(selected.boundaries, 1000),
+    coreBlock: {
+      title: sanitizeText(selected.coreBlock.title, 160),
+      explanation: sanitizeText(selected.coreBlock.explanation, 1200),
+      evidence: selected.coreBlock.evidence.map((item) => sanitizeText(item, 500)),
+      confidence: selected.coreBlock.confidence
+    },
+    copingPattern: {
+      currentResponse: sanitizeText(selected.copingPattern.currentResponse, 600),
+      protectiveFunction: sanitizeText(selected.copingPattern.protectiveFunction, 600),
+      longTermCost: sanitizeText(selected.copingPattern.longTermCost, 600)
+    },
+    controllability: {
+      controllable: selected.controllability.controllable.map((item) => sanitizeText(item, 400)),
+      influenceable: selected.controllability.influenceable.map((item) => sanitizeText(item, 400)),
+      uncontrollable: selected.controllability.uncontrollable.map((item) => sanitizeText(item, 400))
+    },
+    resources: selected.resources.map((item) => ({
+      resource: sanitizeText(item.resource, 400),
+      application: sanitizeText(item.application, 600)
+    })),
+    boundaries: selected.boundaries.map((item) => ({
+      trigger: sanitizeText(item.trigger, 500),
+      action: sanitizeText(item.action, 600),
+      expression: sanitizeText(item.expression, 500)
+    })),
     experiments: selected.experiments.map((item) => ({
       title: sanitizeText(item.title, 120),
-      description: sanitizeText(item.description, 1000)
-    }))
+      type: item.type,
+      action: sanitizeText(item.action, 800),
+      deadline: sanitizeText(item.deadline, 120),
+      hypothesis: sanitizeText(item.hypothesis, 600),
+      evidence: sanitizeText(item.evidence, 600),
+      stopCondition: sanitizeText(item.stopCondition, 500)
+    })),
+    closingReminder: sanitizeText(selected.closingReminder, 500)
   };
 }
 
@@ -576,28 +671,54 @@ function validateReport(result) {
     return 'Missing summary';
   }
 
-  if (
-    !Array.isArray(result.coreBlock) ||
-    result.coreBlock.length !== 3 ||
-    result.coreBlock.some((item) => {
-      return typeof item !== 'string' || !item.trim();
-    })
-  ) {
+  if (!hasRequiredStrings(result.coreBlock, ['title', 'explanation'])) {
     return 'Invalid coreBlock';
   }
 
   if (
-    typeof result.resources !== 'string' ||
-    !result.resources.trim()
+    !Array.isArray(result.coreBlock.evidence) ||
+    result.coreBlock.evidence.length < 2 ||
+    !isNonEmptyStringArray(result.coreBlock.evidence) ||
+    !['high', 'medium', 'low'].includes(result.coreBlock.confidence)
   ) {
-    return 'Missing resources';
+    return 'Invalid coreBlock evidence';
+  }
+
+  if (!hasRequiredStrings(result.copingPattern, [
+    'currentResponse',
+    'protectiveFunction',
+    'longTermCost'
+  ])) {
+    return 'Invalid copingPattern';
+  }
+
+  if (!result.controllability || typeof result.controllability !== 'object') {
+    return 'Missing controllability';
+  }
+
+  for (const key of ['controllable', 'influenceable', 'uncontrollable']) {
+    if (!isNonEmptyStringArray(result.controllability[key])) {
+      return `Invalid controllability.${key}`;
+    }
   }
 
   if (
-    typeof result.boundaries !== 'string' ||
-    !result.boundaries.trim()
+    !Array.isArray(result.resources) ||
+    result.resources.length !== 2 ||
+    result.resources.some((item) => !hasRequiredStrings(item, ['resource', 'application']))
   ) {
-    return 'Missing boundaries';
+    return 'Invalid resources';
+  }
+
+  if (
+    !Array.isArray(result.boundaries) ||
+    result.boundaries.length !== 2 ||
+    result.boundaries.some((item) => {
+      return !hasRequiredStrings(item, ['trigger', 'action']) ||
+        typeof item.expression !== 'string';
+    })
+  ) {
+    return 'Invalid boundaries';
   }
 
   if (
@@ -607,19 +728,38 @@ function validateReport(result) {
     return 'Invalid experiments';
   }
 
-  for (const experiment of result.experiments) {
-    if (
-      !experiment ||
-      typeof experiment.title !== 'string' ||
-      !experiment.title.trim() ||
-      typeof experiment.description !== 'string' ||
-      !experiment.description.trim()
-    ) {
+  const expectedTypes = ['observation', 'micro_action', 'boundary_or_choice'];
+  for (let index = 0; index < result.experiments.length; index++) {
+    const experiment = result.experiments[index];
+    if (!hasRequiredStrings(experiment, [
+      'title',
+      'action',
+      'deadline',
+      'hypothesis',
+      'evidence',
+      'stopCondition'
+    ]) || experiment.type !== expectedTypes[index]) {
       return 'Incomplete experiment';
     }
   }
 
+  if (typeof result.closingReminder !== 'string' || !result.closingReminder.trim()) {
+    return 'Missing closingReminder';
+  }
+
   return null;
+}
+
+function hasRequiredStrings(value, keys) {
+  return value &&
+    typeof value === 'object' &&
+    keys.every((key) => typeof value[key] === 'string' && value[key].trim());
+}
+
+function isNonEmptyStringArray(value) {
+  return Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((item) => typeof item === 'string' && item.trim());
 }
 
 function shouldTryFallback(status) {
