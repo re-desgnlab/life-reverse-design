@@ -235,13 +235,7 @@ ${answersText}
 
     const safeResult = sanitizeReport(result);
 
-    return res.status(200).json({
-      ...safeResult,
-      _meta: {
-        model: geminiResult.model,
-        usedFallback: geminiResult.usedFallback
-      }
-    });
+    return res.status(200).json(safeResult);
   } catch (error) {
     console.error('Vercel Function Error:', {
       name: error?.name,
