@@ -81,7 +81,7 @@
                 <div class="absolute inset-0 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"></div>
             </div>
             <div class="space-y-2">
-                <h3 class="text-lg font-bold text-white">Gemini AI 正在深度解構你的 10 項回答...</h3>
+                <h3 class="text-lg font-bold text-white">正在整理你的 10 項回答...</h3>
                 <p id="loading-status-text" class="text-xs text-slate-400">正在分析你的潛意識抗拒與心智盲點...</p>
             </div>
         </div>
@@ -106,7 +106,7 @@
                 <div class="space-y-2">
                     <div class="text-amber-400 font-bold text-sm">🔒 解鎖反向設計完整解方</div>
                     <h3 class="text-xl font-black text-white">解鎖深度卡點解構 & 3 個專屬低成本實驗</h3>
-                    <p class="text-xs text-slate-400 max-w-xs mx-auto">包含由 Gemini AI 即時量身生成的深度心理剖析、現有資源、底線條件與破局實驗。</p>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto">包含依據你的回答生成的深度分析、現有資源、底線條件與破局實驗。</p>
                 </div>
 
                 <div class="pt-2">
@@ -128,7 +128,7 @@
             <div class="space-y-6">
                 <!-- 核心卡點深度解析 -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
-                    <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider">🎯 核心卡點深度解構 (Gemini 生成)</h3>
+                    <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider">🎯 核心卡點深度解構</h3>
                     <div id="full-core-block" class="space-y-3 text-sm text-slate-200 leading-relaxed"></div>
                 </div>
 
@@ -270,7 +270,7 @@
         function nextQuestion() {
             const ans = document.getElementById('answer-input').value.trim();
             if(!ans) {
-                alert('請簡單寫下您的想法，這有助於 Gemini AI 為你進行精準盲點解構！');
+                alert('請簡單寫下你的真實想法，這有助於系統進行更貼近你的分析！');
                 return;
             }
             userAnswers[currentQIndex] = ans;
