@@ -93,7 +93,8 @@
 
             <div class="space-y-4">
                 <h2 id="question-text" class="text-xl font-bold text-white leading-relaxed">載入中...</h2>
-                <textarea id="answer-input" rows="4" class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 text-sm transition-all resize-none" placeholder="直覺寫下你的真實想法，不用過度包裝..."></textarea>
+                <textarea id="answer-input" rows="4" maxlength="200" class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 text-sm transition-all resize-none" placeholder="直覺寫下你的真實想法，不用過度包裝..."></textarea>
+                <div class="text-right text-xs text-slate-500"><span id="answer-count">0</span> / 200</div>
             </div>
 
             <div class="flex space-x-3">
@@ -103,6 +104,9 @@
                 <button onclick="nextQuestion()" class="flex-grow py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl transition-all shadow-lg shadow-amber-500/10">
                     下一題
                 </button>
+            </div>
+            <div id="turnstile-wrapper" class="hidden flex justify-center">
+                <div id="turnstile-container"></div>
             </div>
         </div>
 
@@ -226,6 +230,40 @@
         let currentQIndex = 0;
         let userAnswers = [];
         let aiReportData = null;
+        let turnstileToken = '';
+        let turnstileEnabled = false;
+        let turnstileWidgetId = null;
+
+        document.getElementById('answer-input').addEventListener('input', (event) => {
+            document.getElementById('answer-count').textContent = event.target.value.length;
+        });
+
+        initializeTurnstile();
+
+        async function initializeTurnstile() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                if (!config.turnstileSiteKey) return;
+                turnstileEnabled = true;
+                document.getElementById('turnstile-wrapper').classList.remove('hidden');
+                const script = document.createElement('script');
+                script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+                script.async = true;
+                script.defer = true;
+                script.onload = () => {
+                    turnstileWidgetId = window.turnstile.render('#turnstile-container', {
+                        sitekey: config.turnstileSiteKey,
+                        callback: (token) => { turnstileToken = token; },
+                        'expired-callback': () => { turnstileToken = ''; },
+                        'error-callback': () => { turnstileToken = ''; }
+                    });
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                console.warn('Turnstile configuration unavailable:', error);
+            }
+        }
 
         const questionsMap = {
             '工作': [
@@ -294,6 +332,7 @@
             document.getElementById('current-q-num').innerText = currentQIndex + 1;
             document.getElementById('question-text').innerText = questionsMap[selectedCategory][currentQIndex];
             document.getElementById('answer-input').value = userAnswers[currentQIndex] || '';
+            document.getElementById('answer-count').textContent = document.getElementById('answer-input').value.length;
 
             const prevBtn = document.getElementById('prev-btn');
             if(currentQIndex > 0) {
@@ -330,24 +369,30 @@
         }
 
         async function triggerAiAnalysis() {
+            if (turnstileEnabled && !turnstileToken) {
+                alert('請先完成人機驗證，再送出分析。');
+                return;
+            }
             document.getElementById('view-question').classList.add('hidden');
             document.getElementById('view-loading').classList.remove('hidden');
 
             try {
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-App-Request': 'life-reverse-design'
+                    },
                     body: JSON.stringify({
                         category: selectedCategory,
-                        answers: userAnswers
+                        answers: userAnswers,
+                        turnstileToken
                     })
                 });
 
-                if (!response.ok) {
-                    throw new Error('AI 分析請求失敗');
-                }
-
-                aiReportData = await response.json();
+                const responseData = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(responseData.error || 'AI 分析請求失敗');
+                aiReportData = responseData;
 
                 document.getElementById('summary-text').innerText = aiReportData.summary;
 
@@ -356,9 +401,14 @@
 
             } catch (error) {
                 console.error('Error:', error);
-                alert('AI 分析生成發生錯誤，請確認網路連線或 API Key 設定後重試。');
+                alert(error.message || 'AI 分析生成發生錯誤，請稍後重試。');
                 document.getElementById('view-loading').classList.add('hidden');
                 document.getElementById('view-question').classList.remove('hidden');
+            } finally {
+                turnstileToken = '';
+                if (turnstileEnabled && window.turnstile && turnstileWidgetId !== null) {
+                    window.turnstile.reset(turnstileWidgetId);
+                }
             }
         }
 
@@ -394,19 +444,32 @@
         function renderFullReport() {
             if (!aiReportData) return;
 
-            const coreHtml = aiReportData.coreBlock.map(p => `<p class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/60">${p}</p>`).join('');
-            document.getElementById('full-core-block').innerHTML = coreHtml;
+            const coreContainer = document.getElementById('full-core-block');
+            coreContainer.replaceChildren();
+            aiReportData.coreBlock.forEach((paragraph) => {
+                const p = document.createElement('p');
+                p.className = 'bg-slate-950/40 p-3 rounded-xl border border-slate-800/60';
+                p.textContent = paragraph;
+                coreContainer.appendChild(p);
+            });
 
             document.getElementById('full-resources').innerText = aiReportData.resources;
             document.getElementById('full-boundaries').innerText = aiReportData.boundaries;
 
-            const expHtml = aiReportData.experiments.map(exp => `
-                <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-                    <div class="font-bold text-amber-400 text-xs mb-1">🧪 ${exp.title}</div>
-                    <div class="text-xs text-slate-300">${exp.description}</div>
-                </div>
-            `).join('');
-            document.getElementById('full-experiments').innerHTML = expHtml;
+            const experimentsContainer = document.getElementById('full-experiments');
+            experimentsContainer.replaceChildren();
+            aiReportData.experiments.forEach((experiment) => {
+                const card = document.createElement('div');
+                card.className = 'p-3 bg-slate-950/60 rounded-xl border border-slate-800';
+                const title = document.createElement('div');
+                title.className = 'font-bold text-amber-400 text-xs mb-1';
+                title.textContent = `🧪 ${experiment.title}`;
+                const description = document.createElement('div');
+                description.className = 'text-xs text-slate-300';
+                description.textContent = experiment.description;
+                card.append(title, description);
+                experimentsContainer.appendChild(card);
+            });
         }
 
         function resetApp() {
