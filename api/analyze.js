@@ -7,9 +7,7 @@ const GEMINI_MODELS = [
   'gemini-3.5-flash'
 ];
 
-const ALLOWED_CATEGORIES = new Set(['工作', '金錢', '關係', '人生方向', '綜合人生卡點']);
 const MAX_ANSWER_LENGTH = 200;
-const MAX_CATEGORY_LENGTH = 20;
 const SAFE_REPORT_KEYS = [
   'summary',
   'coreBlock',
@@ -51,19 +49,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { category, answers, turnstileToken } = req.body || {};
+    const { answers, turnstileToken } = req.body || {};
 
-    if (
-      !category ||
-      typeof category !== 'string' ||
-      category.length > MAX_CATEGORY_LENGTH ||
-      !ALLOWED_CATEGORIES.has(category) ||
-      !Array.isArray(answers) ||
-      answers.length !== 10
-    ) {
+    if (!Array.isArray(answers)) {
       return res.status(400).json({
-        error: '輸入資料格式不正確，請確認已完成全部10題。',
+        error: '送出的回答資料格式不正確，請重新整理頁面後再試。',
         code: 'INVALID_INPUT'
+      });
+    }
+
+    if (answers.length !== 10) {
+      return res.status(400).json({
+        error: `目前收到 ${answers.length} 題回答，請確認已完成全部10題。`,
+        code: 'INCOMPLETE_ANSWER_COUNT'
       });
     }
 
