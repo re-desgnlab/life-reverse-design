@@ -284,7 +284,10 @@ function isAllowedRequestOrigin(req) {
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
-  const defaultOrigins = ['https://life-reverse-design-ranp.vercel.app'];
+  const defaultOrigins = [
+    'https://life-reverse-design-ranp.vercel.app',
+    'https://life-reverse-design-ranp-git-psychology-v2-design-lab4.vercel.app'
+  ];
   const allowedOrigins = new Set([...defaultOrigins, ...configuredOrigins]);
 
   if (fetchSite && !['same-origin', 'same-site'].includes(fetchSite)) return false;
