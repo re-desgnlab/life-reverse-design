@@ -8,7 +8,7 @@ const GEMINI_MODELS = [
 ];
 
 const ALLOWED_CATEGORIES = new Set(['工作', '金錢', '關係', '人生方向']);
-const MAX_ANSWER_LENGTH = 200;
+const MAX_ANSWER_LENGTH = 300;
 const MAX_CATEGORY_LENGTH = 20;
 const SAFE_REPORT_KEYS = ['summary', 'coreBlock', 'resources', 'boundaries', 'experiments'];
 const PROMPT_INJECTION_PATTERNS = [
