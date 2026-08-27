@@ -129,26 +129,71 @@
                 <!-- 核心卡點深度解析 -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
                     <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider">🎯 核心卡點深度解構</h3>
-                    <div id="full-core-block" class="space-y-3 text-sm text-slate-200 leading-relaxed"></div>
+                    <h4 id="full-core-title" class="text-lg font-bold text-white leading-relaxed"></h4>
+                    <p id="full-core-explanation" class="text-sm text-slate-200 leading-relaxed bg-slate-950/40 p-3 rounded-xl border border-slate-800/60"></p>
+                    <div class="space-y-2 pt-1">
+                        <div class="text-xs font-bold text-slate-400">判斷依據</div>
+                        <ul id="full-core-evidence" class="space-y-2 text-xs text-slate-300 leading-relaxed"></ul>
+                    </div>
                 </div>
 
-                <!-- 現有資源與底線 -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
-                        <h4 class="text-xs font-bold text-blue-400 uppercase tracking-wider">🛠 現有可調動資源</h4>
-                        <p id="full-resources" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">...</p>
+                <!-- 目前做法的功能與代價 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+                    <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">🧩 目前的因應模式</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs leading-relaxed">
+                        <div class="bg-slate-950/50 border border-slate-800 rounded-xl p-3">
+                            <div class="font-bold text-slate-400 mb-1">目前做法</div>
+                            <p id="full-current-response" class="text-slate-200"></p>
+                        </div>
+                        <div class="bg-emerald-950/20 border border-emerald-900/40 rounded-xl p-3">
+                            <div class="font-bold text-emerald-400 mb-1">短期保護</div>
+                            <p id="full-protective-function" class="text-slate-200"></p>
+                        </div>
+                        <div class="bg-rose-950/20 border border-rose-900/40 rounded-xl p-3">
+                            <div class="font-bold text-rose-400 mb-1">長期代價</div>
+                            <p id="full-long-term-cost" class="text-slate-200"></p>
+                        </div>
                     </div>
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
-                        <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider">⚠️ 不能接受的底線</h4>
-                        <p id="full-boundaries" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">...</p>
+                </div>
+
+                <!-- 可控範圍 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+                    <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">🧭 目前可以把力氣放在哪裡</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="bg-slate-950/50 border border-slate-800 rounded-xl p-3 space-y-2">
+                            <div class="text-xs font-bold text-emerald-400">可以控制</div>
+                            <ul id="full-controllable" class="space-y-1 text-xs text-slate-300"></ul>
+                        </div>
+                        <div class="bg-slate-950/50 border border-slate-800 rounded-xl p-3 space-y-2">
+                            <div class="text-xs font-bold text-amber-400">可以影響</div>
+                            <ul id="full-influenceable" class="space-y-1 text-xs text-slate-300"></ul>
+                        </div>
+                        <div class="bg-slate-950/50 border border-slate-800 rounded-xl p-3 space-y-2">
+                            <div class="text-xs font-bold text-slate-400">目前無法控制</div>
+                            <ul id="full-uncontrollable" class="space-y-1 text-xs text-slate-300"></ul>
+                        </div>
                     </div>
+                </div>
+
+                <!-- 現有資源 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+                    <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wider">🛠 現有可調動資源</h3>
+                    <div id="full-resources" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                </div>
+
+                <!-- 需要保護的界線 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+                    <h3 class="text-sm font-bold text-rose-400 uppercase tracking-wider">⚠️ 需要保護的界線</h3>
+                    <div id="full-boundaries" class="space-y-3"></div>
                 </div>
 
                 <!-- 3 個客製化低成本實驗 -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-                    <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider">🧪 專屬於你的 3 個低成本破局實驗</h3>
+                    <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider">🧪 專屬於你的 3 個低成本實驗</h3>
                     <div id="full-experiments" class="space-y-3"></div>
                 </div>
+
+                <p id="full-closing-reminder" class="text-xs text-slate-400 leading-relaxed text-center px-4"></p>
             </div>
         </div>
 
@@ -369,32 +414,89 @@
         function renderFullReport() {
             if (!aiReportData) return;
 
-            const coreContainer = document.getElementById('full-core-block');
-            coreContainer.replaceChildren();
-            aiReportData.coreBlock.forEach((paragraph) => {
-                const p = document.createElement('p');
-                p.className = 'bg-slate-950/40 p-3 rounded-xl border border-slate-800/60';
-                p.textContent = paragraph;
-                coreContainer.appendChild(p);
+            document.getElementById('full-core-title').textContent = aiReportData.coreBlock.title;
+            document.getElementById('full-core-explanation').textContent = aiReportData.coreBlock.explanation;
+            renderList('full-core-evidence', aiReportData.coreBlock.evidence);
+
+            document.getElementById('full-current-response').textContent = aiReportData.copingPattern.currentResponse;
+            document.getElementById('full-protective-function').textContent = aiReportData.copingPattern.protectiveFunction;
+            document.getElementById('full-long-term-cost').textContent = aiReportData.copingPattern.longTermCost;
+
+            renderList('full-controllable', aiReportData.controllability.controllable);
+            renderList('full-influenceable', aiReportData.controllability.influenceable);
+            renderList('full-uncontrollable', aiReportData.controllability.uncontrollable);
+
+            const resourcesContainer = document.getElementById('full-resources');
+            resourcesContainer.replaceChildren();
+            aiReportData.resources.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-950/50 border border-slate-800 rounded-xl p-3 space-y-1';
+                const resource = document.createElement('div');
+                resource.className = 'text-xs font-bold text-blue-300';
+                resource.textContent = item.resource;
+                const application = document.createElement('p');
+                application.className = 'text-xs text-slate-300 leading-relaxed';
+                application.textContent = item.application;
+                card.append(resource, application);
+                resourcesContainer.appendChild(card);
             });
 
-            document.getElementById('full-resources').innerText = aiReportData.resources;
-            document.getElementById('full-boundaries').innerText = aiReportData.boundaries;
+            const boundariesContainer = document.getElementById('full-boundaries');
+            boundariesContainer.replaceChildren();
+            aiReportData.boundaries.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-950/50 border border-slate-800 rounded-xl p-3 space-y-2 text-xs leading-relaxed';
+                appendLabeledText(card, '啟動條件', item.trigger, 'text-rose-300');
+                appendLabeledText(card, '保護動作', item.action, 'text-slate-200');
+                if (item.expression) appendLabeledText(card, '可以這樣說', `「${item.expression}」`, 'text-slate-300');
+                boundariesContainer.appendChild(card);
+            });
 
             const experimentsContainer = document.getElementById('full-experiments');
             experimentsContainer.replaceChildren();
             aiReportData.experiments.forEach((experiment) => {
                 const card = document.createElement('div');
-                card.className = 'p-3 bg-slate-950/60 rounded-xl border border-slate-800';
+                card.className = 'p-4 bg-slate-950/60 rounded-xl border border-slate-800 space-y-2';
                 const title = document.createElement('div');
-                title.className = 'font-bold text-amber-400 text-xs mb-1';
-                title.textContent = `🧪 ${experiment.title}`;
-                const description = document.createElement('div');
-                description.className = 'text-xs text-slate-300';
-                description.textContent = experiment.description;
-                card.append(title, description);
+                title.className = 'font-bold text-amber-400 text-sm';
+                title.textContent = `🧪 ${experiment.title}・${experiment.deadline}`;
+                card.appendChild(title);
+                appendLabeledText(card, '怎麼做', experiment.action, 'text-slate-200');
+                appendLabeledText(card, '要驗證什麼', experiment.hypothesis, 'text-slate-300');
+                appendLabeledText(card, '觀察證據', experiment.evidence, 'text-slate-300');
+                appendLabeledText(card, '停止條件', experiment.stopCondition, 'text-slate-400');
                 experimentsContainer.appendChild(card);
             });
+
+            document.getElementById('full-closing-reminder').textContent = aiReportData.closingReminder;
+        }
+
+        function renderList(elementId, items) {
+            const list = document.getElementById(elementId);
+            list.replaceChildren();
+            items.forEach((item) => {
+                const li = document.createElement('li');
+                li.className = 'flex gap-2 leading-relaxed';
+                const dot = document.createElement('span');
+                dot.className = 'text-slate-500';
+                dot.textContent = '•';
+                const text = document.createElement('span');
+                text.textContent = item;
+                li.append(dot, text);
+                list.appendChild(li);
+            });
+        }
+
+        function appendLabeledText(container, labelText, value, valueClass) {
+            const row = document.createElement('div');
+            const label = document.createElement('span');
+            label.className = 'font-bold text-slate-500 mr-2';
+            label.textContent = `${labelText}：`;
+            const text = document.createElement('span');
+            text.className = valueClass;
+            text.textContent = value;
+            row.append(label, text);
+            container.appendChild(row);
         }
 
         function resetApp() {
