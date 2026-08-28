@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import saveReport from '../api/save-report.js';
 import readReport from '../api/report.js';
+import { normalizeEmail } from '../api/report-utils.js';
 
 process.env.NODE_ENV = 'test';
 process.env.SUPABASE_URL = 'https://example.supabase.co';
@@ -13,6 +14,8 @@ process.env.REPORT_TEST_RECIPIENT = 'test@example.com';
 process.env.REPORT_ENCRYPTION_KEY = crypto.randomBytes(32).toString('base64');
 delete process.env.UPSTASH_REDIS_REST_URL;
 delete process.env.UPSTASH_REDIS_REST_TOKEN;
+
+assert.equal(normalizeEmail(' rldlab.official@\u200Bgmail.com '), 'rldlab.official@gmail.com');
 
 const report = {
   summary: '這是一份測試摘要',

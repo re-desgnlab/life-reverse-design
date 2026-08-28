@@ -54,7 +54,11 @@ export async function enforceReportRateLimit(req) {
 }
 
 export function normalizeEmail(value) {
-  const email = String(value || '').trim().toLowerCase();
+  const email = String(value || '')
+    .normalize('NFKC')
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, '')
+    .trim()
+    .toLowerCase();
   if (
     !email ||
     email.length > MAX_EMAIL_LENGTH ||
