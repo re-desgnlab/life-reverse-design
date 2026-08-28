@@ -225,9 +225,13 @@ export function getDeliveryConfig() {
 export function supabaseHeaders(serviceKey, prefer) {
   const headers = {
     apikey: serviceKey,
-    Authorization: `Bearer ${serviceKey}`,
     'Content-Type': 'application/json'
   };
+  // Opaque Supabase secret keys authenticate through `apikey`. Legacy
+  // service-role JWTs still require the Authorization bearer header.
+  if (!String(serviceKey).startsWith('sb_secret_')) {
+    headers.Authorization = `Bearer ${serviceKey}`;
+  }
   if (prefer) headers.Prefer = prefer;
   return headers;
 }
