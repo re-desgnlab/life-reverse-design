@@ -29,6 +29,8 @@ create index if not exists diagnoses_expires_at_idx on public.diagnoses (expires
 
 alter table public.diagnoses enable row level security;
 revoke all on table public.diagnoses from anon, authenticated;
+grant usage on schema public to service_role;
+grant select, insert, update, delete on table public.diagnoses to service_role;
 
 comment on table public.diagnoses is
   'Encrypted diagnostic answers and reports. Access only through server-side service role.';
