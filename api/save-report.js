@@ -111,7 +111,10 @@ export default async function handler(req, res) {
     const inserted = await insertResponse.json().catch(() => null);
     if (!insertResponse.ok || !Array.isArray(inserted) || !inserted[0]?.id) {
       console.error('Supabase insert failed', { status: insertResponse.status });
-      return res.status(502).json({ error: '報告暫時無法保存，請稍後再試。', code: 'REPORT_SAVE_FAILED' });
+      return res.status(502).json({
+        error: '報告暫時無法保存，請稍後再試。',
+        code: getStorageFailureCode(insertResponse.status, insertResponse.ok)
+      });
     }
 
     const reportUrl = `${configValues.reportPublicUrl.replace(/\/$/, '')}/report.html?token=${encodeURIComponent(token)}`;
@@ -148,6 +151,14 @@ export default async function handler(req, res) {
     console.error('Save report error', { message: error?.message });
     return res.status(500).json({ error: '報告處理時發生錯誤，請稍後再試。', code: 'REPORT_SERVER_ERROR' });
   }
+}
+
+function getStorageFailureCode(status, responseOk) {
+  if (status === 400) return 'REPORT_STORAGE_SCHEMA_REJECTED';
+  if (status === 401 || status === 403) return 'REPORT_STORAGE_AUTH_FAILED';
+  if (status === 404) return 'REPORT_STORAGE_TABLE_NOT_FOUND';
+  if (responseOk) return 'REPORT_STORAGE_RESPONSE_INVALID';
+  return 'REPORT_SAVE_FAILED';
 }
 
 async function sendReportEmail({ apiKey, from, to, name, reportUrl, expiresAt }) {
