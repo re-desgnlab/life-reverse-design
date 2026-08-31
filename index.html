@@ -70,7 +70,7 @@
                 <button id="prev-btn" onclick="prevQuestion()" class="hidden w-1/3 py-4 bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold rounded-2xl border border-slate-800 transition-all">
                     上一題
                 </button>
-                <button onclick="nextQuestion()" class="flex-grow py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl transition-all shadow-lg shadow-amber-500/10">
+                <button id="next-question-btn" onclick="nextQuestion()" class="flex-grow py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl transition-all shadow-lg shadow-amber-500/10">
                     下一題
                 </button>
             </div>
@@ -236,8 +236,18 @@
                 </div>
 
                 <div>
-                    <label for="modal-birth-date" class="block text-xs font-bold text-slate-300 mb-1">生日</label>
-                    <input type="date" id="modal-birth-date" name="birth-date" autocomplete="bday" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <span class="block text-xs font-bold text-slate-300 mb-1">生日</span>
+                    <div class="grid grid-cols-3 gap-2">
+                        <select id="modal-birth-year" aria-label="出生年份" autocomplete="bday-year" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                            <option value="">年</option>
+                        </select>
+                        <select id="modal-birth-month" aria-label="出生月份" autocomplete="bday-month" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                            <option value="">月</option>
+                        </select>
+                        <select id="modal-birth-day" aria-label="出生日期" autocomplete="bday-day" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                            <option value="">日</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div>
@@ -288,7 +298,7 @@
         });
 
         initializeTurnstile();
-        setAdultBirthDateLimit();
+        initializeBirthDateSelects();
 
         async function initializeTurnstile() {
             try {
@@ -348,6 +358,7 @@
             document.getElementById('question-text').innerText = coreQuestions[currentQIndex];
             document.getElementById('answer-input').value = userAnswers[currentQIndex] || '';
             document.getElementById('answer-count').textContent = document.getElementById('answer-input').value.length;
+            document.getElementById('next-question-btn').textContent = currentQIndex === 9 ? '開始分析' : '下一題';
 
             const prevBtn = document.getElementById('prev-btn');
             if(currentQIndex > 0) {
@@ -443,7 +454,7 @@
 
         async function saveAndEmailReport() {
             const name = document.getElementById('modal-name').value.trim();
-            const birthDate = document.getElementById('modal-birth-date').value;
+            const birthDate = getSelectedBirthDate();
             const email = document.getElementById('modal-email').value.trim();
             const adultConfirmed = document.getElementById('adult-report-confirmation').checked;
             const consent = document.getElementById('report-consent').checked;
@@ -523,8 +534,44 @@
             status.className = `text-xs text-center ${isError ? 'text-rose-400' : 'text-emerald-400'}`;
         }
 
-        function setAdultBirthDateLimit() {
-            document.getElementById('modal-birth-date').max = getAdultCutoffDate();
+        function initializeBirthDateSelects() {
+            const yearSelect = document.getElementById('modal-birth-year');
+            const monthSelect = document.getElementById('modal-birth-month');
+            const cutoffYear = Number(getAdultCutoffDate().slice(0, 4));
+
+            for (let year = cutoffYear; year >= 1900; year--) {
+                yearSelect.add(new Option(`${year} 年`, String(year)));
+            }
+            for (let month = 1; month <= 12; month++) {
+                const value = String(month).padStart(2, '0');
+                monthSelect.add(new Option(`${month} 月`, value));
+            }
+
+            yearSelect.addEventListener('change', updateBirthDayOptions);
+            monthSelect.addEventListener('change', updateBirthDayOptions);
+            updateBirthDayOptions();
+        }
+
+        function updateBirthDayOptions() {
+            const year = Number(document.getElementById('modal-birth-year').value);
+            const month = Number(document.getElementById('modal-birth-month').value);
+            const daySelect = document.getElementById('modal-birth-day');
+            const previousDay = daySelect.value;
+            const daysInMonth = year && month ? new Date(year, month, 0).getDate() : 31;
+
+            daySelect.replaceChildren(new Option('日', ''));
+            for (let day = 1; day <= daysInMonth; day++) {
+                const value = String(day).padStart(2, '0');
+                daySelect.add(new Option(`${day} 日`, value));
+            }
+            if (previousDay && Number(previousDay) <= daysInMonth) daySelect.value = previousDay;
+        }
+
+        function getSelectedBirthDate() {
+            const year = document.getElementById('modal-birth-year').value;
+            const month = document.getElementById('modal-birth-month').value;
+            const day = document.getElementById('modal-birth-day').value;
+            return year && month && day ? `${year}-${month}-${day}` : '';
         }
 
         function getAdultCutoffDate() {
