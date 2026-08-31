@@ -34,7 +34,18 @@
   </section>
   <dialog id="detail"><div class="detail-head"><div><strong id="detail-title">分析內容</strong><small id="detail-meta"></small></div><button class="close" onclick="detail.close()">×</button></div><div id="detail-body" class="detail-body"></div></dialog>
   <script>
-    const ADMIN_EMAIL='rldlab.official@gmail.com'; let client; let records=[];
+    const ADMIN_EMAIL='rldlab.official@gmail.com'; const QUESTION_TEXTS=[
+      '近期有哪些情境讓你感到反覆困擾、難以推進，或不知道該如何選擇？請描述最近一次發生的經過。',
+      '在那個情境中，你最明顯的情緒和身體反應是什麼？例如焦慮、疲憊、憤怒、逃避或麻木。',
+      '這件事真正影響到你最在意的什麼？例如安全感、自由、認同、成就、關係或生活品質。',
+      '面對這個問題時，你通常怎麼處理？這個做法短期保護了你什麼？',
+      '如果繼續使用同一種處理方式，未來半年最可能付出什麼代價？',
+      '你真正想改變的是目前的情境、別人的行為，還是自己的選擇與反應？為什麼？',
+      '這件事當中，哪些是你可以控制、可以影響，以及目前無法控制的？',
+      '你過去是否曾成功處理過類似問題？當時有哪些能力、資源或支持幫助了你？',
+      '如果這個問題有所改善，你希望三個月後，一個普通的日子會出現哪些具體不同？',
+      '針對目前的困擾，你願意先嘗試哪一個幅度最小、可在一週內完成的調整？你最擔心這個調整會帶來什麼影響？'
+    ]; let client; let records=[];
     const loginView=document.getElementById('login-view'),adminView=document.getElementById('admin-view'),messageBox=document.getElementById('login-message'),loginButton=document.getElementById('login-button');
     async function init(){try{const config=await fetch('/api/admin-config').then(r=>{if(!r.ok)throw new Error('後台登入設定尚未完成');return r.json()});client=supabase.createClient(config.supabaseUrl,config.supabaseAnonKey);const {data}=await client.auth.getSession();if(data.session)await enter(data.session);client.auth.onAuthStateChange((_e,s)=>s?enter(s):showLogin())}catch(e){showMessage(e.message,'error')}}
     document.getElementById('login-button').onclick=async()=>{loginButton.disabled=true;showMessage('正在寄送…','success');const {error}=await client.auth.signInWithOtp({email:ADMIN_EMAIL,options:{emailRedirectTo:location.origin+'/admin.html',shouldCreateUser:true}});loginButton.disabled=false;if(error){showMessage(error.message,'error');return}showMessage('登入信已寄出，請到品牌 Gmail 點擊安全連結。','success')};
@@ -54,9 +65,9 @@
       const experiments=Array.isArray(report.experiments)?report.experiments.map((x,i)=>'<div class="report-item"><strong>實驗 '+(i+1)+'　'+escapeHtml(x.title||'未命名')+(x.deadline?'　<span class="tag">'+escapeHtml(x.deadline)+'</span>':'')+'</strong><p>'+escapeHtml(x.action||'')+'</p><p><b>假設：</b>'+escapeHtml(x.hypothesis||'')+'</p><p><b>觀察證據：</b>'+escapeHtml(x.evidence||'')+'</p><p><b>停止條件：</b>'+escapeHtml(x.stopCondition||'')+'</p></div>').join(''):'<p class="muted">未提供</p>';
       const resources=Array.isArray(report.resources)?report.resources.map(x=>'<div class="report-item"><strong>'+escapeHtml(x.resource||'資源')+'</strong><p>'+escapeHtml(x.application||'')+'</p></div>').join(''):'<p class="muted">未提供</p>';
       const boundaries=Array.isArray(report.boundaries)?report.boundaries.map(x=>'<div class="report-item"><strong>觸發情境：'+escapeHtml(x.trigger||'')+'</strong><p>'+escapeHtml(x.action||'')+'</p><p><b>可使用的表達：</b>'+escapeHtml(x.expression||'')+'</p></div>').join(''):'<p class="muted">未提供</p>';
-      document.getElementById('detail-body').innerHTML='<section class="detail-section"><h3>核心卡點</h3><p><strong>'+escapeHtml(core.title||r.coreTitle||'已完成分析')+'</strong></p><p>'+escapeHtml(report.summary||'')+'</p><h4>為什麼這是目前最值得處理的卡點</h4><p>'+escapeHtml(core.explanation||'')+'</p><h4>分析依據</h4>'+list(core.evidence)+'</section>'+
+      document.getElementById('detail-body').innerHTML='<section class="detail-section"><h3>十題回答</h3>'+answers.map((a,i)=>'<div class="answer"><strong>第 '+(i+1)+' 題</strong><p><b>問題：</b>'+escapeHtml(QUESTION_TEXTS[i]||'題目文字未提供')+'</p><p><b>回答：</b>'+escapeHtml(a||'未回答')+'</p></div>').join('')+'</section>'+
+      '<section class="detail-section"><h3>核心卡點</h3><p><strong>'+escapeHtml(core.title||r.coreTitle||'已完成分析')+'</strong></p><p>'+escapeHtml(report.summary||'')+'</p><h4>為什麼這是目前最值得處理的卡點</h4><p>'+escapeHtml(core.explanation||'')+'</p><h4>分析依據</h4>'+list(core.evidence)+'</section>'+
       '<section class="detail-section"><h3>目前的應對模式</h3><p><b>目前反應：</b>'+escapeHtml(report.copingPattern?.currentResponse||'')+'</p><p><b>保護功能：</b>'+escapeHtml(report.copingPattern?.protectiveFunction||'')+'</p><p><b>長期代價：</b>'+escapeHtml(report.copingPattern?.longTermCost||'')+'</p></section>'+
-      '<section class="detail-section"><h3>十題回答</h3>'+answers.map((a,i)=>'<div class="answer"><strong>第 '+(i+1)+' 題</strong><br>'+escapeHtml(a)+'</div>').join('')+'</section>'+
       '<section class="detail-section"><h3>可控範圍</h3><h4>我可以直接控制</h4>'+list(report.controllability?.controllable)+'<h4>我可以影響</h4>'+list(report.controllability?.influenceable)+'<h4>我無法控制</h4>'+list(report.controllability?.uncontrollable)+'</section>'+
       '<section class="detail-section"><h3>可運用資源</h3>'+resources+'</section><section class="detail-section"><h3>界線與選擇</h3>'+boundaries+'</section><section class="detail-section"><h3>專屬低成本實驗</h3>'+experiments+'</section>'+
       '<section class="detail-section"><h3>結語</h3><p>'+escapeHtml(report.closingReminder||'')+'</p></section>';
