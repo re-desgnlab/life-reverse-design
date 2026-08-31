@@ -15,6 +15,7 @@ import {
 } from './report-utils.js';
 
 export const config = { maxDuration: 30 };
+const MAX_TEST_USERS = 50;
 
 export default async function handler(req, res) {
   setSecurityHeaders(res);
@@ -79,6 +80,26 @@ export default async function handler(req, res) {
     if (!rateLimit.success) {
       res.setHeader('Retry-After', String(rateLimit.retryAfter));
       return res.status(429).json({ error: '每小時最多可寄送5份報告，請稍後再試。', code: 'REPORT_RATE_LIMITED' });
+    }
+
+    const capacityResponse = process.env.NODE_ENV === 'test' ? null : await fetch(
+      `${configValues.supabaseUrl}/rest/v1/diagnoses?select=id`,
+      {
+        headers: {
+          ...supabaseHeaders(configValues.supabaseServiceKey),
+          Prefer: 'count=exact',
+          Range: '0-0'
+        }
+      }
+    );
+    const contentRange = capacityResponse?.headers.get('content-range') || '';
+    const storedCount = Number(contentRange.split('/')[1]);
+    if (capacityResponse && !capacityResponse.ok) throw new Error(`Capacity check failed: ${capacityResponse.status}`);
+    if (capacityResponse && Number.isFinite(storedCount) && storedCount >= MAX_TEST_USERS) {
+      return res.status(429).json({
+        error: '本輪測試的50個名額已額滿，謝謝你的參與！',
+        code: 'TEST_CAPACITY_REACHED'
+      });
     }
 
     const token = createReportToken();
