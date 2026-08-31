@@ -72,7 +72,7 @@ function decryptRecord(row, includePrivate) {
     email: row.email,
     birthDate: profile?.birthDate || null,
     appId: row.source || 'direct',
-    coreTitle: report?.coreBlock?.title || report?.summary || '已完成分析',
+    coreTitle: getCoreTitle(report),
     marketingOptIn: row.marketing_opt_in,
     emailStatus: row.email_status,
     createdAt: row.created_at,
@@ -82,7 +82,21 @@ function decryptRecord(row, includePrivate) {
   if (!includePrivate) return base;
   return {
     ...base,
-    answers: decryptJson(row.answers_encrypted),
+    answers: normalizeAnswers(decryptJson(row.answers_encrypted)),
     report
   };
+}
+
+function getCoreTitle(report) {
+  return report?.coreBlock?.title || report?.core_block?.title ||
+    report?.coreIssue?.title || report?.core_issue?.title ||
+    report?.coreTitle || report?.summary || '已完成分析';
+}
+
+function normalizeAnswers(value) {
+  if (Array.isArray(value)) return value;
+  if (value && typeof value === 'object') {
+    return Object.keys(value).sort().map((key) => value[key]);
+  }
+  return [];
 }
