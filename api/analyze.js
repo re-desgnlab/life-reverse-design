@@ -243,8 +243,8 @@ ${answersText}
     {
       "title": "觀察實驗名稱",
       "type": "observation",
-      "action": "三天內能完成的具體紀錄方式",
-      "deadline": "明確期限",
+      "action": "四十八小時內能完成的具體觀察或紀錄方式，重點是立刻開始而不是得到完整結論",
+      "deadline": "48 小時內",
       "hypothesis": "要驗證的假設",
       "evidence": "要觀察什麼證據",
       "stopCondition": "出現什麼情況應停止；無明顯風險則寫無"
@@ -252,8 +252,8 @@ ${answersText}
     {
       "title": "微行動實驗名稱",
       "type": "micro_action",
-      "action": "四十八小時內可完成，且直接對應主要情境的微小行動",
-      "deadline": "明確期限",
+      "action": "七天內可完成，且直接對應主要情境的微小行動",
+      "deadline": "7 天內",
       "hypothesis": "要驗證的假設",
       "evidence": "完成後要觀察的結果",
       "stopCondition": "風險上限或停止條件"
@@ -261,8 +261,8 @@ ${answersText}
     {
       "title": "界線或選擇回測名稱",
       "type": "boundary_or_choice",
-      "action": "七天內可完成，且直接測試核心卡點的行動",
-      "deadline": "明確期限",
+      "action": "三十天內可完成，用來重複驗證或形成新界線、新選擇的行動",
+      "deadline": "30 天內",
       "hypothesis": "要驗證的假設",
       "evidence": "判斷是否有效的標準",
       "stopCondition": "風險上限或停止條件"
@@ -463,11 +463,11 @@ function sanitizeReport(result) {
       action: sanitizeText(item.action, 600),
       expression: sanitizeText(item.expression, 500)
     })),
-    experiments: selected.experiments.map((item) => ({
+    experiments: selected.experiments.map((item, index) => ({
       title: sanitizeText(item.title, 120),
       type: item.type,
       action: sanitizeText(item.action, 800),
-      deadline: sanitizeText(item.deadline, 120),
+      deadline: ['48 小時內', '7 天內', '30 天內'][index],
       hypothesis: sanitizeText(item.hypothesis, 600),
       evidence: sanitizeText(item.evidence, 600),
       stopCondition: sanitizeText(item.stopCondition, 500)
