@@ -453,6 +453,7 @@
             }
             document.getElementById('view-question').classList.add('hidden');
             document.getElementById('view-loading').classList.remove('hidden');
+            const submittedAnswers = getSubmittedAnswers();
 
             try {
                 const response = await fetch('/api/analyze', {
@@ -463,7 +464,7 @@
                     },
                     body: JSON.stringify({
                         category: selectedCategory,
-                        answers: userAnswers,
+                        answers: submittedAnswers,
                         adultConfirmed: document.getElementById('adult-entry-confirmation').checked,
                         turnstileToken
                     })
@@ -519,6 +520,7 @@
             const marketingOptIn = document.getElementById('marketing-consent').checked;
             const button = document.getElementById('report-submit-button');
             const status = document.getElementById('report-submit-status');
+            const submittedAnswers = getSubmittedAnswers();
 
             if (!name) {
                 showReportStatus('請輸入姓名。', true);
@@ -540,7 +542,7 @@
                 showReportStatus('請先確認必要的資料蒐集與報告寄送說明。', true);
                 return;
             }
-            if (!aiReportData || userAnswers.length !== 10) {
+            if (!aiReportData || submittedAnswers.length !== 10 || submittedAnswers.some((answer) => !answer)) {
                 showReportStatus('本次分析資料不完整，請重新完成分析。', true);
                 return;
             }
@@ -560,7 +562,7 @@
                         name,
                         birthDate,
                         email,
-                        answers: userAnswers,
+                        answers: submittedAnswers,
                         report: aiReportData,
                         consent,
                         adultConfirmed,
@@ -584,6 +586,10 @@
                 button.disabled = false;
                 button.textContent = '寄送我的完整報告';
             }
+        }
+
+        function getSubmittedAnswers() {
+            return Array.from({ length: 10 }, (_, index) => String(userAnswers[index] || '').trim());
         }
 
         function showReportStatus(message, isError) {
