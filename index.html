@@ -378,9 +378,21 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function startDiagnosis() {
+        async function startDiagnosis() {
             if (!document.getElementById('adult-entry-confirmation').checked) {
                 alert('此測驗目前僅提供已滿18歲者使用，請先確認年齡資格。');
+                return;
+            }
+            try {
+                const capacityResponse = await fetch('/api/capacity', { headers: { 'X-App-Request': 'life-reverse-design' } });
+                const capacity = await capacityResponse.json().catch(() => ({}));
+                if (!capacityResponse.ok) throw new Error(capacity.error || '目前無法確認測試名額，請稍後再試。');
+                if (capacity.full) {
+                    alert('本輪測試的50個名額已額滿，謝謝你的參與！');
+                    return;
+                }
+            } catch (error) {
+                alert(error.message || '目前無法確認測試名額，請稍後再試。');
                 return;
             }
             currentQIndex = 0;
