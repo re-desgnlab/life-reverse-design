@@ -58,7 +58,7 @@
                 <h1>找出目前最需要處理的核心卡點</h1>
                 <p>透過 10 個提問，看見真正卡住你的地方。</p>
                 <button onclick="openAssessment()">開始探索　→</button>
-                <p class="landing-note">本次共 10 題，約需 10–15 分鐘</p>
+                <p class="landing-note">本次共 10 題，約需 10–15 分鐘<br>首輪測試限額 50 位，歡迎邀請朋友一起試用</p>
             </div>
         </div>
 
@@ -461,6 +461,12 @@
                 if (responseData.code === 'MINOR_SAFETY_RESTRICTION') {
                     document.getElementById('view-loading').classList.add('hidden');
                     document.getElementById('view-minor-safety').classList.remove('hidden');
+                    return;
+                }
+                if (responseData.code === 'TEST_CAPACITY_REACHED') {
+                    alert(responseData.error);
+                    document.getElementById('view-loading').classList.add('hidden');
+                    document.getElementById('view-landing').classList.remove('hidden');
                     return;
                 }
                 if (!response.ok) throw new Error(responseData.error || 'AI 分析請求失敗');
