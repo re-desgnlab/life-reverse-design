@@ -8,6 +8,7 @@ const GEMINI_MODELS = [
 ];
 
 const MAX_ANSWER_LENGTH = 200;
+const MAX_TEST_USERS = 50;
 const SAFE_REPORT_KEYS = [
   'summary',
   'coreBlock',
@@ -129,6 +130,14 @@ export default async function handler(req, res) {
       return res.status(403).json({
         error: '人機驗證未通過，請重新整理頁面後再試。',
         code: 'TURNSTILE_FAILED'
+      });
+    }
+
+    const capacity = await getTestCapacity();
+    if (capacity.full) {
+      return res.status(429).json({
+        error: '本輪測試的50個名額已額滿，謝謝你的參與！',
+        code: 'TEST_CAPACITY_REACHED'
       });
     }
 
@@ -270,6 +279,7 @@ ${answersText}
   ],
   "closingReminder": "一句不說教的提醒，協助使用者把這份結果視為可驗證的假設，而不是對人格的定論"
 }
+
 `;
 
     const geminiResult = await generateWithFallback({
@@ -824,4 +834,23 @@ function getGeminiUserMessage(status) {
   };
 
   return messageMap[status] || 'AI服務暫時無法使用，請稍後重新嘗試。';
+}
+
+async function getTestCapacity() {
+  if (process.env.NODE_ENV === 'test') return { full: false, count: 0 };
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) return { full: false, count: 0 };
+  const response = await fetch(`${supabaseUrl}/rest/v1/diagnoses?select=id`, {
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      Prefer: 'count=exact',
+      Range: '0-0'
+    }
+  });
+  if (!response.ok) throw new Error(`Capacity check failed: ${response.status}`);
+  const contentRange = response.headers.get('content-range') || '';
+  const count = Number(contentRange.split('/')[1]);
+  return { full: Number.isFinite(count) && count >= MAX_TEST_USERS, count };
 }
