@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>人生反向設計所｜管理中心</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--green:#19372b;--gold:#d8b56d;--paper:#f5f2ec;--card:#fffdf9;--ink:#18221d;--muted:#748078;--line:#ded9d0}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,"Noto Sans TC",sans-serif}
+    button,input{font:inherit}.hidden{display:none!important}.shell{min-height:100vh;display:grid;grid-template-columns:240px 1fr}
+    aside{background:var(--green);color:white;padding:25px 18px;display:flex;flex-direction:column}.brand{display:flex;gap:12px;align-items:center;margin-bottom:35px}.mark{width:42px;height:42px;display:grid;place-items:center;background:var(--gold);color:var(--green);border-radius:13px;font:700 22px Georgia}.brand strong{display:block;font-family:Georgia}.brand small{color:#ffffff9c}
+    nav button{width:100%;display:flex;gap:10px;align-items:center;border:0;border-radius:10px;background:transparent;color:#ffffffa8;padding:12px;text-align:left}nav button.active{background:#ffffff16;color:white}.account{margin-top:auto;border-top:1px solid #ffffff1a;padding-top:18px;font-size:12px;color:#ffffffa8}
+    main{min-width:0}.top{height:82px;background:#fffdf9cc;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 42px}.top h1{margin:0;font:500 24px Georgia}.top small{color:var(--muted)}.signout{border:1px solid var(--line);border-radius:9px;background:white;padding:8px 12px;cursor:pointer}
+    .content{max-width:1360px;margin:auto;padding:38px 42px}.intro h2{font:500 38px Georgia;margin:0 0 8px}.intro p{color:var(--muted);margin:0}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:28px 0 16px}.metric,.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 25px #25362d0a}.metric{padding:20px}.metric span{font-size:12px;color:var(--muted)}.metric strong{display:block;margin-top:18px;font:500 34px Georgia}.panel{overflow:hidden}.panel-head{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--line)}.panel-head h3{font:500 21px Georgia;margin:0}.search{border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:white}
+    table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:14px 20px;border-bottom:1px solid #ebe7df}th{font-size:11px;color:var(--muted)}tbody tr{cursor:pointer}tbody tr:hover{background:#f7f4ee}.pill{display:inline-block;padding:5px 8px;border-radius:99px;font-size:10px;background:#e3eee6;color:#39704f}.pill.failed{background:#f7e4e1;color:#a43e33}.empty{text-align:center;color:var(--muted);padding:55px}
+    .login{min-height:100vh;display:grid;place-items:center;background:var(--green);padding:24px}.login-card{width:min(420px,100%);background:var(--card);border-radius:24px;padding:40px;text-align:center}.login-card h1{font:500 30px Georgia;margin:18px 0 10px}.login-card p{color:var(--muted);line-height:1.6}.google{width:100%;border:0;border-radius:12px;background:var(--green);color:white;font-weight:700;padding:13px;cursor:pointer;margin-top:15px}.error{color:#a43e33;font-size:12px;margin-top:14px}
+    dialog{width:min(760px,calc(100% - 30px));border:0;border-radius:20px;padding:0;box-shadow:0 30px 90px #0004}dialog::backdrop{background:#13251dbd}.detail-head{padding:22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}.detail-body{padding:22px;max-height:72vh;overflow:auto}.close{border:0;background:transparent;font-size:22px}.answer{padding:12px 0;border-bottom:1px solid #ece8e1;font-size:13px;line-height:1.65}.report{white-space:pre-wrap;font-size:13px;line-height:1.7;background:#f4f1eb;border-radius:12px;padding:16px}
+    @media(max-width:900px){.shell{grid-template-columns:1fr}aside{display:none}.top,.content{padding-left:18px;padding-right:18px}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.metrics{grid-template-columns:1fr}.top small{display:none}.intro h2{font-size:30px}.content{padding-top:25px}.panel{overflow-x:auto}table{min-width:700px}}
+  </style>
+</head>
+<body>
+  <section id="login-view" class="login">
+    <div class="login-card"><div class="mark" style="margin:auto">R</div><h1>管理中心</h1><p>使用品牌 Google 帳號登入。系統僅允許指定的管理員 Email。</p><button id="login-button" class="google">使用 Google 帳號登入</button><div id="login-error" class="error"></div></div>
+  </section>
+  <section id="admin-view" class="shell hidden">
+    <aside><div class="brand"><div class="mark">R</div><div><strong>Reverse Life</strong><small>統一管理中心</small></div></div><nav><button class="active">▦　營運總覽</button><button>▤　分析紀錄</button><button>◉　使用者</button><button>✉　寄信狀態</button><button>◇　Web Apps</button></nav><div class="account">管理員<br><strong>rldlab.official@gmail.com</strong></div></aside>
+    <main><header class="top"><div><h1>營運總覽</h1><small>Reverse Life Design</small></div><button id="signout-button" class="signout">登出</button></header>
+      <div class="content"><div class="intro"><h2>品牌資料，一處掌握</h2><p>未來新增 Web App 時，以 App ID 分類並匯入同一個後台。</p></div>
+        <section class="metrics"><article class="metric"><span>完成分析</span><strong id="metric-total">—</strong></article><article class="metric"><span>本週新增</span><strong id="metric-week">—</strong></article><article class="metric"><span>寄信成功率</span><strong id="metric-sent">—</strong></article><article class="metric"><span>Web Apps</span><strong>1</strong></article></section>
+        <section class="panel"><div class="panel-head"><h3>最新分析紀錄</h3><input id="search" class="search" placeholder="搜尋姓名或 Email"></div><table><thead><tr><th>使用者</th><th>Email</th><th>核心卡點</th><th>完成時間</th><th>寄信</th></tr></thead><tbody id="records"><tr><td colspan="5" class="empty">正在讀取資料…</td></tr></tbody></table></section>
+      </div>
+    </main>
+  </section>
+  <dialog id="detail"><div class="detail-head"><strong id="detail-title">分析內容</strong><button class="close" onclick="detail.close()">×</button></div><div id="detail-body" class="detail-body"></div></dialog>
+  <script>
+    const ADMIN_EMAIL='rldlab.official@gmail.com'; let client; let records=[];
+    const loginView=document.getElementById('login-view'),adminView=document.getElementById('admin-view'),errorBox=document.getElementById('login-error');
+    async function init(){try{const config=await fetch('/api/admin-config').then(r=>{if(!r.ok)throw new Error('後台登入設定尚未完成');return r.json()});client=supabase.createClient(config.supabaseUrl,config.supabaseAnonKey);const {data}=await client.auth.getSession();if(data.session)await enter(data.session);client.auth.onAuthStateChange((_e,s)=>s?enter(s):showLogin())}catch(e){errorBox.textContent=e.message}}
+    document.getElementById('login-button').onclick=async()=>{errorBox.textContent='';await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+'/admin.html'}})};
+    document.getElementById('signout-button').onclick=()=>client.auth.signOut();
+    function showLogin(){loginView.classList.remove('hidden');adminView.classList.add('hidden')}
+    async function enter(session){if(session.user.email?.toLowerCase()!==ADMIN_EMAIL){await client.auth.signOut();errorBox.textContent='這個 Google 帳號沒有管理員權限';return}loginView.classList.add('hidden');adminView.classList.remove('hidden');await loadRecords(session.access_token)}
+    async function api(path,token){const r=await fetch(path,{headers:{Authorization:'Bearer '+token}});const data=await r.json();if(!r.ok)throw new Error(data.error||'讀取失敗');return data}
+    async function loadRecords(token){try{const data=await api('/api/admin-diagnoses',token);records=data.records;document.getElementById('metric-total').textContent=data.metrics.total;document.getElementById('metric-week').textContent=data.metrics.thisWeek;document.getElementById('metric-sent').textContent=data.metrics.sentRate+'%';render(records);document.getElementById('search').oninput=e=>{const q=e.target.value.toLowerCase();render(records.filter(r=>(r.name+' '+r.email).toLowerCase().includes(q)))};document.getElementById('records').onclick=async e=>{const tr=e.target.closest('tr[data-id]');if(!tr)return;const {data:{session}}=await client.auth.getSession();const d=await api('/api/admin-diagnoses?id='+encodeURIComponent(tr.dataset.id),session.access_token);showDetail(d.record)}}catch(e){document.getElementById('records').innerHTML='<tr><td colspan="5" class="empty">'+escapeHtml(e.message)+'</td></tr>'}}
+    function render(items){document.getElementById('records').innerHTML=items.length?items.map(r=>'<tr data-id="'+r.id+'"><td>'+escapeHtml(r.name)+'</td><td>'+escapeHtml(r.email)+'</td><td>'+escapeHtml(r.coreTitle)+'</td><td>'+new Date(r.createdAt).toLocaleString('zh-TW')+'</td><td><span class="pill '+(r.emailStatus==='failed'?'failed':'')+'">'+escapeHtml(r.emailStatus)+'</span></td></tr>').join(''):'<tr><td colspan="5" class="empty">尚無分析紀錄</td></tr>'}
+    function showDetail(r){document.getElementById('detail-title').textContent=r.name+' 的分析';document.getElementById('detail-body').innerHTML='<h3>十題回答</h3>'+r.answers.map((a,i)=>'<div class="answer"><strong>第 '+(i+1)+' 題</strong><br>'+escapeHtml(a)+'</div>').join('')+'<h3>完整報告</h3><div class="report">'+escapeHtml(JSON.stringify(r.report,null,2))+'</div>';document.getElementById('detail').showModal()}
+    function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+    init();
+  </script>
+</body>
+</html>
