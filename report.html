@@ -82,17 +82,32 @@
             </section>
 
             <p id="closing-reminder" class="text-xs text-slate-400 text-center leading-relaxed px-4"></p>
+
+            <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                <div>
+                    <h2 class="text-sm font-bold text-blue-400">這份分析對你有幫助嗎？</h2>
+                    <p class="text-xs text-slate-400 mt-1">回饋會去除姓名、Email 與生日後，獨立送入內容洞察中心。</p>
+                </div>
+                <label class="block text-xs text-slate-300">幫助程度
+                    <select id="feedback-helpful" class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white"><option value="">請選擇</option><option value="helpful">有幫助</option><option value="partly">部分有幫助</option><option value="not_yet">目前沒有幫助</option></select>
+                </label>
+                <label class="block text-xs text-slate-300">看完後，你最想先解決什麼？（選填）<textarea id="feedback-next-problem" maxlength="1200" rows="3" class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white"></textarea></label>
+                <label class="block text-xs text-slate-300">希望我們接下來做什麼內容？（選填）<textarea id="feedback-content-request" maxlength="1200" rows="3" class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white"></textarea></label>
+                <label class="flex items-start gap-2 text-xs text-slate-400"><input id="feedback-consent" type="checkbox" class="mt-1">同意將這份去識別回饋用於改善工具與內容規劃；不會加入電子報名單。</label>
+                <p id="feedback-status" class="hidden text-xs"></p>
+                <button id="feedback-submit" onclick="submitFeedback()" class="w-full py-3 bg-blue-500 hover:bg-blue-400 text-white rounded-xl font-bold">送出回饋</button>
+            </section>
         </div>
     </main>
 
     <script>
+        const reportToken = new URLSearchParams(window.location.search).get('token') || '';
         loadReport();
 
         async function loadReport() {
-            const token = new URLSearchParams(window.location.search).get('token');
-            if (!token) return showError('報告連結缺少必要資訊。');
+            if (!reportToken) return showError('報告連結缺少必要資訊。');
             try {
-                const response = await fetch(`/api/report?token=${encodeURIComponent(token)}`);
+                const response = await fetch(`/api/report?token=${encodeURIComponent(reportToken)}`);
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || '無法讀取報告。');
                 renderReport(data.report, data.expiresAt);
@@ -189,6 +204,36 @@
             text.textContent = value;
             row.append(label, text);
             container.appendChild(row);
+        }
+
+        async function submitFeedback() {
+            const button = document.getElementById('feedback-submit');
+            const status = document.getElementById('feedback-status');
+            button.disabled = true;
+            status.textContent = '正在儲存…';
+            status.className = 'text-xs text-slate-400';
+            try {
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-App-Request': 'life-reverse-design' },
+                    body: JSON.stringify({
+                        token: reportToken,
+                        helpful: document.getElementById('feedback-helpful').value,
+                        nextProblem: document.getElementById('feedback-next-problem').value,
+                        contentRequest: document.getElementById('feedback-content-request').value,
+                        consent: document.getElementById('feedback-consent').checked
+                    })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || '回饋儲存失敗。');
+                status.textContent = '謝謝你，回饋已安全儲存。';
+                status.className = 'text-xs text-emerald-400';
+                button.textContent = '已送出回饋';
+            } catch (error) {
+                status.textContent = error.message;
+                status.className = 'text-xs text-rose-400';
+                button.disabled = false;
+            }
         }
 
         function showError(message) {

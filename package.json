@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/report-flow.test.mjs && node tests/minor-safety.test.mjs"
+    "test": "node tests/report-flow.test.mjs && node tests/minor-safety.test.mjs && node tests/feedback.test.mjs"
   },
   "dependencies": {
     "@google/genai": "latest"
